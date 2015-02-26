@@ -11,25 +11,25 @@ $populate = true if $opts{p};
 $metadata = true if $opts{m};
 
 
-#$dbh = DBI->connect('dbi:Pg:dbname=DB2REP;
-#                        host=localhost;
-#                        port=5432',
-#                        'nenant',
-#                        '',
-#                        {AutoCommit=>1,RaiseError=>1,PrintError=>0}
-#                    );
-$dbh = DBI->connect('dbi:Pg:dbname=DB2REP;
+$dbh_local = DBI->connect('dbi:Pg:dbname=DB2REP;
+                        host=localhost;
+                        port=5432',
+                        'db2moto',
+                        '',
+                        {AutoCommit=>1,RaiseError=>1,PrintError=>0}
+                    );
+$dbh_rdb = DBI->connect('dbi:Pg:dbname=DB2REP;
                         host=10.46.117.29;
                         port=5432',
                         'nenant',
                         'Nen00ant',
                         {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                     );
-#@tables = $dbh->tables();
+#@tables = $dbh_rdb->tables();
 #for $table (@tables) {
 #    print "$table\n";
 #}
-#@books = @{ $dbh->selectall_arrayref("SELECT * FROM books",  { Slice => {} }) };
+#@books = @{ $dbh_rdb->selectall_arrayref("SELECT * FROM books",  { Slice => {} }) };
 #for $book (@books) {
 #    print "$book->{title}\n";
 #}
@@ -80,7 +80,7 @@ sub error_handler {
 
 
 ### Create a new statement handle to fetch table information
-my $tabsth = $dbh->table_info();
+my $tabsth = $dbh_rdb->table_info();
 
 ### Iterate through all the tables...
 while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
@@ -104,14 +104,14 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
         print "Statement:     $statement\n";
         
         ### Prepare and execute the SQL statement
-        my $sth = eval { $dbh->prepare( $statement ) };
+        my $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
         if ($@) {
             error_handler;
             $skip = 1;
         }
             #or warn "Can't prepare SQL statement: $DBI::errstr\n"
             #and $skip = 1;
-        eval { $sth->execute() };
+        eval { $sth_rdb->execute() };
         if ($@) {
             error_handler;
             $skip = 1;
@@ -119,7 +119,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             #or warn "Can't execute SQL statement: $DBI::errstr\n"
             #    and $skip = 1;
         unless ($skip) {
-            my $fields = $sth->{NUM_OF_FIELDS};
+            my $fields = $sth_rdb->{NUM_OF_FIELDS};
             print "NUM_OF_FIELDS: $fields\n\n";
             
             print "Column Name                                Type            Precision  Scale  Nullable?\n";
@@ -128,14 +128,14 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             ### Iterate through all the fields and dump the field information
             for ( my $i = 0 ; $i < $fields ; $i++ ) {
             
-                my $name = $sth->{NAME}->[$i];
+                my $name = $sth_rdb->{NAME}->[$i];
             
                 ### Describe the NULLABLE value
-                my $nullable = ("No", "Yes", "Unknown")[ $sth->{NULLABLE}->[$i] ];
+                my $nullable = ("No", "Yes", "Unknown")[ $sth_rdb->{NULLABLE}->[$i] ];
                 ### Tidy the other values, which some drivers don't provide
-                my $scale = $sth->{SCALE}->[$i];
-                my $prec  = $sth->{PRECISION}->[$i];
-                my $type  = $sth->{TYPE}->[$i];
+                my $scale = $sth_rdb->{SCALE}->[$i];
+                my $prec  = $sth_rdb->{PRECISION}->[$i];
+                my $type  = $sth_rdb->{TYPE}->[$i];
             
                 ### Display the field information
                 printf "%-30s %20s (%3d)        %4d   %4d   %s\n",
@@ -145,7 +145,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             ### Explicitly deallocate the statement resources
             ### because we didn't fetch all the data
         }
-        $sth->finish();
+        $sth_rdb->finish();
     }
     elsif ($populate) {
         my @row;
@@ -156,48 +156,53 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
         print "\n";
         print "Table Information\n";
         print "=================\n\n";
+        print "$table\n";
         print "Statement:     $statement\n";
         
         ### Prepare and execute the SQL statement
-        my $sth = eval { $dbh->prepare( $statement ) };
+        my $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
         if ($@) {
             error_handler;
             $skip = 1;
         }
             #or warn "Can't prepare SQL statement: $DBI::errstr\n"
             #and $skip = 1;
-        eval { $sth->execute() };
+        eval { $sth_rdb->execute() };
         if ($@) {
             error_handler;
             $skip = 1;
         }
         unless ($skip) {
-            my $result_table_ref = $sth->fetchall_arrayref;
+            my $result_table_ref = $sth_rdb->fetchall_arrayref;
             #print @{${$result_table_ref}[0]};
             #print "@{[ $#{${$result_table_ref}[0]} + 1 ]} fields\n";
-            print "$sth->{NUM_OF_FIELDS} fields\n";
-            #for ( my $i = 0 ; $i < $sth->{NUM_OF_FIELDS} ; $i++ ) {
-            #    print $sth->{NAME}->[$i];
+            print "$sth_rdb->{NUM_OF_FIELDS} fields\n";
+            #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+            #    print $sth_rdb->{NAME}->[$i];
             #}
             #for my $field (@{${$result_table_ref}[0]}) {
             #    print "($field)"
             #}
-            #$sth = $dbh->prepare(“insert into table values (?, ?, ?)”);
+            #$sth_local = $dbh_local->prepare(“insert into table values (?, ?, ?)”);
             my $ins = "insert into $table values (";
-            for ( my $i = 0 ; $i < $sth->{NUM_OF_FIELDS} ; $i++ ) {
+            for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
                 $ins .= "?, ";
             }
             $ins =~ s/, $//;
             $ins .= ");";
             print "$ins\n";
-            for ( my $i = 0 ; $i < $sth->{NUM_OF_FIELDS} ; $i++ ) {
-                print "(${${$result_table_ref}[0]}[$i])";
-            }
-            #for my $row (@{$result_table_ref}) {
-            #    print @{$row};
+            $sth_local = $dbh_local->prepare($ins);
+            #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+            #    print "(${${$result_table_ref}[0]}[$i])";
             #}
+            for my $row (@{$result_table_ref}) {
+                print "Inserting @{$row}\n";
+                $sth_local->execute(@{$row});
+            }
         }
     }
 }
 ### Disconnect from the database
-$dbh->disconnect();
+$dbh_rdb->disconnect();
+$dbh_local->disconnect();
+
