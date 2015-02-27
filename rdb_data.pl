@@ -6,9 +6,10 @@ use Getopt::Std;
 #getopts("E:cdelx:", \%opts);
 #$envpass = $opts{E} if $opts{E};
 #$commit = true if $opts{c};
-getopts("mp", \%opts);
-$populate = true if $opts{p};
+getopts("dmp", \%opts);
 $metadata = true if $opts{m};
+$populate = true if $opts{p};
+$truncate = true if $opts{d};
 
 
 $dbh_local = DBI->connect('dbi:Pg:dbname=DB2REP;
@@ -79,8 +80,13 @@ sub error_handler {
 }
 
 
-### Create a new statement handle to fetch table information
-my $tabsth = $dbh_rdb->table_info();
+unless ($truncate) {
+    ### Create a new statement handle to fetch table information
+    $tabsth = $dbh_rdb->table_info();
+}
+else {
+    $tabsth = $dbh_local->table_info();
+}
 
 ### Iterate through all the tables...
 while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
@@ -94,13 +100,14 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
     ### Build the full table name with quoting if required
     $table = qq{"$owner"."$table"} if defined $owner;
     
+    print "\n";
+    print "Table Information\n";
+    print "=================\n";
+    print "$table\n\n";
+
     if ($metadata) {
         ### The SQL statement to fetch the table metadata
         my $statement = "SELECT * FROM $table limit 1";
-        
-        print "\n";
-        print "Table Information\n";
-        print "=================\n\n";
         print "Statement:     $statement\n";
         
         ### Prepare and execute the SQL statement
@@ -152,11 +159,6 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
         
         ### The SQL statement to fetch 20 random rows from each table
         my $statement = "SELECT * FROM $table order by random() limit 20;";
-
-        print "\n";
-        print "Table Information\n";
-        print "=================\n\n";
-        print "$table\n";
         print "Statement:     $statement\n";
         
         ### Prepare and execute the SQL statement
@@ -199,6 +201,25 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                 print "Inserting @{$row}\n";
                 $sth_local->execute(@{$row});
             }
+        }
+    }
+    elsif ($truncate) {
+
+        ### The SQL statement to remove all rows from each table in test database
+        my $statement = "TRUNCATE TABLE $table;";
+        print "Statement:     $statement\n";
+        ### Prepare and execute the SQL statement
+        my $sth_local = eval { $dbh_local->prepare( $statement ) };
+        if ($@) {
+            error_handler;
+            $skip = 1;
+        }
+            #or warn "Can't prepare SQL statement: $DBI::errstr\n"
+            #and $skip = 1;
+        eval { $sth_local->execute() };
+        if ($@) {
+            error_handler;
+            $skip = 1;
         }
     }
 }
