@@ -6,8 +6,9 @@ use Getopt::Std;
 #getopts("E:cdelx:", \%opts);
 #$envpass = $opts{E} if $opts{E};
 #$commit = true if $opts{c};
-getopts("dmp", \%opts);
+getopts("cdmp", \%opts);
 $metadata = true if $opts{m};
+$count = true if $opts{c};
 $populate = true if $opts{p};
 $truncate = true if $opts{d};
 
@@ -30,7 +31,7 @@ $dbh_rdb = DBI->connect('dbi:Pg:dbname=DB2REP;
 #for $table (@tables) {
 #    print "$table\n";
 #}
-#@books = @{ $dbh_rdb->selectall_arrayref("SELECT * FROM books",  { Slice => {} }) };
+#@books = @{ $dbh_local->selectall_arrayref("SELECT * FROM books",  { Slice => {} }) };
 #for $book (@books) {
 #    print "$book->{title}\n";
 #}
@@ -62,7 +63,7 @@ $dbh_rdb = DBI->connect('dbi:Pg:dbname=DB2REP;
 
 sub error_handler {
     
-    if ($@ =~ m/ORA-12154/i )
+    if ($@ =~ m/already exists/i or $@ =~ m/permission denied/i)
     {
         #handle this error, so I can clean up and continue
         warn "$DBI::errstr\n";
@@ -80,7 +81,7 @@ sub error_handler {
 }
 
 
-unless ($truncate) {
+unless ($count or $truncate) {
     ### Create a new statement handle to fetch table information
     $tabsth = $dbh_rdb->table_info();
 }
@@ -103,9 +104,26 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
     print "\n";
     print "Table Information\n";
     print "=================\n";
-    print "$table\n\n";
+    print "$table\n";
 
-    if ($metadata) {
+    if ($count) {
+        my $statement = "SELECT count(*) FROM $table";
+        my $sth_local = eval { $dbh_local->prepare( $statement ) };
+        if ($@) {
+            error_handler;
+            $skip = 1;
+        }
+        eval { $sth_local->execute() };
+        if ($@) {
+            error_handler;
+            $skip = 1;
+        }
+        unless ($skip) {
+            my $result_table_ref = $sth_local->fetchall_arrayref;
+            print "Number of rows: @{${$result_table_ref}[0]}\n";
+        }
+    }
+    elsif ($metadata) {
         ### The SQL statement to fetch the table metadata
         my $statement = "SELECT * FROM $table limit 1";
         print "Statement:     $statement\n";
@@ -158,7 +176,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
         my @row;
         
         ### The SQL statement to fetch 20 random rows from each table
-        my $statement = "SELECT * FROM $table order by random() limit 20;";
+        my $statement = "SELECT * FROM $table order by random() limit 100;";
         print "Statement:     $statement\n";
         
         ### Prepare and execute the SQL statement
@@ -193,13 +211,21 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             $ins =~ s/, $//;
             $ins .= ");";
             print "$ins\n";
-            $sth_local = $dbh_local->prepare($ins);
+            my $sth_local = eval { $dbh_local->prepare($ins) };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
             #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
             #    print "(${${$result_table_ref}[0]}[$i])";
             #}
             for my $row (@{$result_table_ref}) {
                 print "Inserting @{$row}\n";
-                $sth_local->execute(@{$row});
+                eval { $sth_local->execute(@{$row}) };
+                if ($@) {
+                    error_handler;
+                    $skip = 1;
+                }
             }
         }
     }
