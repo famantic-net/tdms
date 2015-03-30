@@ -16,6 +16,12 @@ $truncate = 1 if $opts{d};
 
 $localdb = 1 if $truncate;
 
+our $company_entrytbl = "acib_acitftg";
+our $person_entrytbl = "acpr_prtpr";
+# Mapping of table to relevant column
+# %orgnum{tablename}
+require "testdata_columns.plx";
+
 sub error_handler {
     
     if ($@ =~ m/already exists/i or $@ =~ m/permission denied/i)
@@ -212,7 +218,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
     elsif ($populate) {
         my @row;
         
-        ### The SQL statement to fetch 20 random rows from each table
+        ### The SQL statement to fetch random rows from each table
         my $statement = "SELECT * FROM $table order by random() limit 100;";
         print "Statement:     $statement\n";
         
