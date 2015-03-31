@@ -29,3 +29,11 @@
     nsdb_sync => "ftg_org_num",
     nyckeltal => "org_num",
 );
+
+%pnr_name = (
+    acin_intr20 => "pnr",
+    acin_intr40 => "pnr",
+    acpr_prtprh => "pnr",
+    actx_tax01 => "pnr",
+    actx_tax02 => "pnr",
+);
