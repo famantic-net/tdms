@@ -1,10 +1,15 @@
-%orgnum_name = (
+# The entry tables and their key column
+our @company_entry = qw(acib_acitftg ftg_org_num);
+our @person_entry = qw(acpr_prtpr pnr);
+
+our %orgnum_name = (
     acba_ratindik => "orgnr",
     acba_rating => "orgnr",
     acba_scoring2 => "orgnr",
     acdt_dttph => "org_num",
     acdt_dttpv => "org_num",
     acib_acitaga => "aga_org_num",
+    acib_acitarn => "arn_org_num",
     acib_acitbif => "bif_org_num",
     acib_acitbiv => "biv_org_num",
     acib_acitboa => "boa_org_num",
@@ -12,6 +17,8 @@
     acib_acitft2 => "ft2_org_num",
     acib_acitft3 => "ft3_org_num",
     acib_acitgaf => "gaf_org_num",
+    acib_acitkcn => "kcn_dottr_num",
+    acib_acitmin => "min_dottr_num",
     acib_acitnon => "non_org_num",
     acib_acitntf => "ntf_org_num",
     acib_acitoms => "oms_org_num",
@@ -20,6 +27,8 @@
     acin_intr20 => "orgnr",
     acin_intr30 => "orgnr",
     acin_intr40 => "orgnr",
+    acgd_empfun01 => "orgnr",
+    acgd_organi01 => "orgnr",
     acra_klient => "orgnr",
     acra_rapp => "orgnr",
     acra_ratssa => "orgnr",
@@ -30,10 +39,20 @@
     nyckeltal => "org_num",
 );
 
-%pnr_name = (
+our %pnr_name = (
     acin_intr20 => "pnr",
     acin_intr40 => "pnr",
     acpr_prtprh => "pnr",
     actx_tax01 => "pnr",
     actx_tax02 => "pnr",
+);
+
+# Internal relations
+# These are also fetched based on the relation defined
+# Should be a list of anonymous arrays with pairs of anonymous hashes indicating
+# the 'table1,column1->table2,column2' relation
+our @int_relations = ( 
+    [ { acib_acitarn => "arn_arbnr_num" }, { acib_acitnoe => "noe_enhnr_num"  } ],
+    #[ { acib_acitarn => "arn_dunsnr_num" }, { acgd_empfun01 => "dunsnr"  } ],
+    #[ { acib_acinull => "arn_arbnr_num2" }, { acib_acitnoe2 => "noe_enhnr_num2"  } ],
 );
