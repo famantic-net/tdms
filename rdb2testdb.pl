@@ -1,4 +1,32 @@
 #!/usr/bin/env perl
+=pod
+
+=head1 Purpose
+
+To populate the Test Data Management System with records from RDB (aka DB2REP).
+
+Will fetch 100 records for companies and individuals each and their corresponding data
+in other tables. The keys that are used are specified in the file F<testdata_columns.plx>.
+
+=head1 Options
+
+=over
+
+=item -v
+
+Generates trace output showing processed tables and inserts.
+
+=back
+
+=head1 Files
+
+testdata_columns.plx
+
+=head1 Examples
+
+Nothing yet. :(
+
+=cut
 
 use DBI;
 use Getopt::Std;

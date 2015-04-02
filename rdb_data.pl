@@ -1,4 +1,80 @@
 #!/usr/bin/env perl
+=pod
+
+=head1 Purpose
+
+Helper functions for Test Data Management System work.
+
+=head1 Options
+
+=over
+
+=item -c
+
+Counts the number of row in each table
+
+=item -d
+
+Truncates, ie deletes all rows, in all tables. Implies C<-l>.
+
+=item -l
+
+Perform the action locally, ie on the machine where the script runs.
+
+=item -m
+
+Display metadata for all tables.
+
+=item -p
+
+Populate local tables. This will fetch 100 random rows for each table from RDB.
+
+Note, the tables will not be coherent, ie no consideration is made that the keys
+correspond between tables.
+
+=item -t
+
+Display fileds that are defined as C<SQL_TIMESTAMP> from all tables.
+
+=back
+
+=head1 Examples
+
+C<rdb_data.pl -lm>
+
+=over 4
+
+Show metadata for the local RDB replica.
+
+=back
+
+C<rdb_data.pl -p>
+
+=over 4
+
+(Pseudo) populate the local RDB replica.
+
+Use F<rdb2testdb.pl> for proper coherent population.
+
+=back
+
+C<rdb_data.pl -lc>
+
+=over 4
+
+Display a count of rows for each table in the local RBD replica.
+
+=back
+
+C<rdb_data.pl -d>
+
+=over 4
+
+Truncate all local tables.
+
+=back
+
+=cut
 
 use DBI;
 use Getopt::Std;
@@ -68,7 +144,7 @@ sub error_handler {
 
 
 $dbh_local = DBI->connect('dbi:Pg:dbname=DB2REP;
-                        host=localhost;
+                        host=127.0.0.1;
                         port=5432',
                         'db2moto',
                         '',
@@ -79,7 +155,7 @@ unless ($localdb) {
                             host=10.46.117.29;
                             port=5432',
                             'nenant',
-                            'Nen00ant',
+                            'nenant',
                             {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                         );
 }
