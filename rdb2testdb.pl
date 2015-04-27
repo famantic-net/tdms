@@ -13,6 +13,10 @@ file F<rdb2testdb.conf>.
 
 =over
 
+=item -s
+
+Fetches the test data for businesses and persons that have been specified in F<rdb2testdb.conf>.
+
 =item -v
 
 Generates trace output showing processed tables and inserts.
@@ -32,7 +36,8 @@ Nothing yet. :(
 use DBI;
 use Getopt::Std;
 
-getopts("v", \%opts);
+getopts("sv", \%opts);
+$specific = 1 if $opts{s};
 $verbose = 1 if $opts{v};
 
 # Mapping of table to relevant column
@@ -106,9 +111,26 @@ sub populate {
                                     };
     }
     trace_print "\n--- Fetching from $entry_table[0] ---\n";
-    my $statement = "SELECT * FROM $entry_table[0] order by random() limit $init_size";
-    my $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
-    $sth_rdb->execute();
+    my $statement;
+    my $sth_rdb;
+    my $result_ref;
+    if ($specific) {
+        @test_list = $target eq "org" ? @test_businesses : @test_persons;
+        for my $test_item (@test_list) {
+            $statement = "SELECT * FROM $entry_table[0] where $entry_table[1]=$test_item";
+            $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
+            $sth_rdb->execute();
+            $result_ref = $sth_rdb->fetchall_arrayref;
+            push @result_set, @{ $result_ref };
+        }
+    }
+    else {
+        $statement = "SELECT * FROM $entry_table[0] order by random() limit $init_size";
+        $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
+        $sth_rdb->execute();
+        $result_ref = $sth_rdb->fetchall_arrayref;
+        @result_set = @{ $result_ref };
+    }
     
     # Prepare the insert statement with the number of columns
     my $ins = "INSERT INTO $entry_table[0] VALUES (";
@@ -128,8 +150,7 @@ sub populate {
     
     my @collection;
     # Get the result set, store the key elements and insert the result set locally
-    my $result_ref = $sth_rdb->fetchall_arrayref;
-    for my $row (@{ $result_ref }) {
+    for my $row (@result_set) {
         #trace_print ${$row}[0];
         push @collection, ${$row}[$number_column];
         trace_print "Inserting: @{$row}\n";

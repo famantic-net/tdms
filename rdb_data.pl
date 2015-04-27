@@ -92,11 +92,6 @@ $truncate = 1 if $opts{d};
 
 $localdb = 1 if $truncate;
 
-our $company_entrytbl = "acib_acitftg";
-our $person_entrytbl = "acpr_prtpr";
-# Mapping of table to relevant column
-# %orgnum{tablename}
-require "testdata_columns.plx";
 
 sub error_handler {
     
