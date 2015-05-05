@@ -32,6 +32,10 @@ Populate local tables. This will fetch 100 random rows for each table from RDB.
 Note, the tables will not be coherent, ie no consideration is made that the keys
 correspond between tables.
 
+=item -r
+
+Roll dates, i.e update certain timestamps.
+
 =item -t
 
 Display fileds that are defined as C<SQL_TIMESTAMP> from all tables.
@@ -82,15 +86,16 @@ use Getopt::Std;
 #getopts("E:cdelx:", \%opts);
 #$envpass = $opts{E} if $opts{E};
 #$commit = 1 if $opts{c};
-getopts("cdlmpt", \%opts);
+getopts("cdlmprt", \%opts);
 $localdb = 1 if $opts{l};
 $metadata = 1 if $opts{m};
 $count = 1 if $opts{c};
 $populate = 1 if $opts{p};
+$roll_dates = 1 if $opts{r};
 $timestamps = 1 if $opts{t};
 $truncate = 1 if $opts{d};
 
-$localdb = 1 if $truncate;
+$localdb = 1 if $truncate or $roll_dates;
 
 
 sub error_handler {
@@ -182,183 +187,262 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
     my $table = $name;
     
     ### Build the full table name with quoting if required
-    $table = qq{"$owner"."$table"} if defined $owner;
+    $table = qq{$owner."$table"} if defined $owner;
     
-    unless ($timestamps) {
+    unless ($timestamps or $roll_dates) {
         print "\n";
         print "Table Information\n";
         print "=================\n";
         print "$table\n";
     }
 
-    if ($count) {
-        my $dbh = $localdb ? $dbh_local : $dbh_rdb;
-        my $statement = "SELECT count(*) FROM $table";
-        my $sth = eval { $dbh->prepare( $statement ) };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-        eval { $sth->execute() };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-        unless ($skip) {
-            my $result_table_ref = $sth->fetchall_arrayref;
-            print "Number of rows: @{${$result_table_ref}[0]}\n";
-        }
-    }
-    elsif ($metadata) {
-        my $dbh = $localdb ? $dbh_local : $dbh_rdb;
-        ### The SQL statement to fetch the table metadata
-        my $statement = "SELECT * FROM $table limit 1";
-        print "Statement:     $statement\n";
-        
-        ### Prepare and execute the SQL statement
-        my $sth = eval { $dbh->prepare( $statement ) };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-            #or warn "Can't prepare SQL statement: $DBI::errstr\n"
-            #and $skip = 1;
-        eval { $sth->execute() };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-            #or warn "Can't execute SQL statement: $DBI::errstr\n"
-            #    and $skip = 1;
-        unless ($skip) {
-            my $fields = $sth->{NUM_OF_FIELDS};
-            print "NUM_OF_FIELDS: $fields\n\n";
+    SWITCH: {
+        $metadata && do {
+            my $dbh = $localdb ? $dbh_local : $dbh_rdb;
             
-            print "Column Name                                Type            Precision  Scale  Nullable?\n";
-            print "------------------------------             ----            ---------  -----  ---------\n\n";
-            
-            ### Iterate through all the fields and dump the field information
-            for ( my $i = 0 ; $i < $fields ; $i++ ) {
-            
-                my $name = $sth->{NAME}->[$i];
-            
-                ### Describe the NULLABLE value
-                my $nullable = ("No", "Yes", "Unknown")[ $sth->{NULLABLE}->[$i] ];
-                ### Tidy the other values, which some drivers don't provide
-                my $scale = $sth->{SCALE}->[$i];
-                my $prec  = $sth->{PRECISION}->[$i];
-                my $type  = $sth->{TYPE}->[$i];
-            
-                ### Display the field information
-                printf "%-30s %20s (%3d)        %4d   %4d   %s\n",
-                        $name, $types{$type}, $type, $prec, $scale, $nullable;
-            }
-            
-            ### Explicitly deallocate the statement resources
-            ### because we didn't fetch all the data
-        }
-        $sth->finish();
-    }
-    elsif ($timestamps) {
-        my $found;
-        my @timestamps;
-        my $dbh = $localdb ? $dbh_local : $dbh_rdb;
-        my $statement = "SELECT * FROM $table limit 1";
-        my $sth = eval { $dbh->prepare( $statement ) };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-        eval { $sth->execute() };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-        unless ($skip) {
-            my $fields = $sth->{NUM_OF_FIELDS};
-            for ( my $i = 0 ; $i < $fields ; $i++ ) {
-                if ($types{$sth->{TYPE}->[$i]} eq "SQL_TIMESTAMP") {
-                    $found = 1;
-                    push @timestamps, $sth->{NAME}->[$i];
+            # Primary keys
+            # https://wiki.postgresql.org/wiki/Retrieve_primary_key_columns
+            my $statement = qq(SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
+                FROM   pg_index i
+                JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                                     AND a.attnum = ANY(i.indkey)
+                WHERE  i.indrelid = '$table'::regclass
+                AND    i.indisprimary;);
+            $sth = $dbh->prepare( $statement );
+            $sth->execute();
+            my $pkey_arr_ref = $sth->fetchall_arrayref;
+            unless ($#{$pkey_arr_ref} < 0) {
+                for my $pkey (@{$pkey_arr_ref}) {
+                    # The key name is in the first element
+                    print "Pkey: @{$pkey}\n";
                 }
             }
-            print "$table\n@timestamps\n\n" if $found;
-        }
-        $sth->finish();
-    }
-    elsif ($populate) {
-        my @row;
-        
-        ### The SQL statement to fetch random rows from each table
-        my $statement = "SELECT * FROM $table order by random() limit 100;";
-        print "Statement:     $statement\n";
-        
-        ### Prepare and execute the SQL statement
-        my $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-            #or warn "Can't prepare SQL statement: $DBI::errstr\n"
-            #and $skip = 1;
-        eval { $sth_rdb->execute() };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-        unless ($skip) {
-            my $result_table_ref = $sth_rdb->fetchall_arrayref;
-            #print @{${$result_table_ref}[0]};
-            #print "@{[ $#{${$result_table_ref}[0]} + 1 ]} fields\n";
-            print "$sth_rdb->{NUM_OF_FIELDS} fields\n";
-            #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-            #    print $sth_rdb->{NAME}->[$i];
-            #}
-            #for my $field (@{${$result_table_ref}[0]}) {
-            #    print "($field)"
-            #}
-            #$sth_local = $dbh_local->prepare(“insert into table values (?, ?, ?)”);
-            my $ins = "insert into $table values (";
-            for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-                $ins .= "?, ";
+            else {
+                print "=== No primary keys defined ===\n";
             }
-            $ins =~ s/, $//;
-            $ins .= ");";
-            print "$ins\n";
-            my $sth_local = eval { $dbh_local->prepare($ins) };
+            ### The SQL statement to fetch the table metadata
+            $statement = "SELECT * FROM $table limit 1";
+            print "Statement:     $statement\n";
+            
+            ### Prepare and execute the SQL statement
+            $sth = $dbh->prepare( $statement );
+                #or warn "Can't prepare SQL statement: $DBI::errstr\n"
+                #and $skip = 1;
+            eval { $sth->execute() };
             if ($@) {
                 error_handler;
                 $skip = 1;
             }
-            #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-            #    print "(${${$result_table_ref}[0]}[$i])";
-            #}
-            for my $row (@{$result_table_ref}) {
-                print "Inserting @{$row}\n";
-                eval { $sth_local->execute(@{$row}) };
+                #or warn "Can't execute SQL statement: $DBI::errstr\n"
+                #    and $skip = 1;
+            unless ($skip) {
+                my $fields = $sth->{NUM_OF_FIELDS};
+                print "NUM_OF_FIELDS: $fields\n\n";
+                
+                print "Column Name                                Type            Precision  Scale  Nullable?\n";
+                print "------------------------------             ----            ---------  -----  ---------\n\n";
+                
+                ### Iterate through all the fields and dump the field information
+                for ( my $i = 0 ; $i < $fields ; $i++ ) {
+                
+                    my $name = $sth->{NAME}->[$i];
+                
+                    ### Describe the NULLABLE value
+                    my $nullable = ("No", "Yes", "Unknown")[ $sth->{NULLABLE}->[$i] ];
+                    ### Tidy the other values, which some drivers don't provide
+                    my $scale = $sth->{SCALE}->[$i];
+                    my $prec  = $sth->{PRECISION}->[$i];
+                    my $type  = $sth->{TYPE}->[$i];
+                
+                    ### Display the field information
+                    printf "%-30s %20s (%3d)        %4d   %4d   %s\n",
+                            $name, $types{$type}, $type, $prec, $scale, $nullable;
+                }
+            }
+            ### Explicitly deallocate the statement resources
+            ### because we didn't fetch all the data
+            $sth->finish();
+            last SWITCH;
+        };
+        $roll_dates && do {
+            if ($table =~ m/actx_ftax/) {
+                # Primary keys
+                # https://wiki.postgresql.org/wiki/Retrieve_primary_key_columns
+                my $pkey_statement = qq(SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
+                    FROM   pg_index i
+                    JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                                         AND a.attnum = ANY(i.indkey)
+                    WHERE  i.indrelid = '$table'::regclass
+                    AND    i.indisprimary;);
+                my $sth = $dbh_local->prepare( $pkey_statement );
+                $sth->execute();
+                my $pkey_arr_ref = $sth->fetchall_arrayref;
+                my @pkeys;
+                for my $pkey (@{$pkey_arr_ref}) {
+                    # The key name is in the first element
+                    #print "Pkey: ${$pkey}[0]\n";
+                    push @pkeys, ${$pkey}[0];
+                }
+                
+                my $roll_field = "ar_sek_tax_from";
+                # my $statement = "SELECT ar_sek_tax_from, orgnr, lnr, priotax, prioandel, priolnr FROM $table";
+                my $fetch_statement = "SELECT $roll_field, @{[ join ',', @pkeys ]} FROM $table";
+                $sth = $dbh_local->prepare( $fetch_statement ) ;
+                $sth->execute();
+                my $result_table_ref = $sth->fetchall_arrayref;
+                for my $row (@{$result_table_ref}) {
+                    #print @{$row}, "\n";
+                    push @rolled_year, ${$row}[0] + 1;
+                }
+                
+                my $put_statement = "UPDATE $table SET $roll_field = ? WHERE ";
+                for my $pkey (@pkeys) {
+                    # print "Index is: $index\n";
+                    $put_statement .= "$pkey = ? AND ";
+                }
+                $put_statement =~ s/ AND $//;
+                $put_statement .= ";";
+                print "$put_statement\n";
+                $sth = $dbh_local->prepare($put_statement);
+                my $line = 0;
+                my $put_row;
+                for my $row (@{$result_table_ref}) {
+                    #print "$rolled_year[$line] @{$row}\n";
+                    $put_row = "$rolled_year[$line] ";
+                    for (my $i=1; $i<=$#{$row}; $i++) {
+                        $put_row .= " ${$row}[$i]";
+                    }
+                    print "Inserting $put_row\n";
+                    $sth->execute(split /\s+/, $put_row);
+                    $line++;
+                }
+                $sth->finish();
+            }
+            last SWITCH;
+        };
+        $count && do {
+            my $dbh = $localdb ? $dbh_local : $dbh_rdb;
+            my $statement = "SELECT count(*) FROM $table";
+            my $sth = eval { $dbh->prepare( $statement ) };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
+            eval { $sth->execute() };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
+            unless ($skip) {
+                my $result_table_ref = $sth->fetchall_arrayref;
+                print "Number of rows: @{${$result_table_ref}[0]}\n";
+            }
+            last SWITCH;
+        };
+        $timestamps && do {
+            my $found;
+            my @timestamps;
+            my $dbh = $localdb ? $dbh_local : $dbh_rdb;
+            my $statement = "SELECT * FROM $table limit 1";
+            my $sth = eval { $dbh->prepare( $statement ) };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
+            eval { $sth->execute() };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
+            unless ($skip) {
+                my $fields = $sth->{NUM_OF_FIELDS};
+                for ( my $i = 0 ; $i < $fields ; $i++ ) {
+                    if ($types{$sth->{TYPE}->[$i]} eq "SQL_TIMESTAMP") {
+                        $found = 1;
+                        push @timestamps, $sth->{NAME}->[$i];
+                    }
+                }
+                print "$table\n@timestamps\n\n" if $found;
+            }
+            $sth->finish();
+            last SWITCH;
+        };
+        $populate && do {
+            my @row;
+            
+            ### The SQL statement to fetch random rows from each table
+            my $statement = "SELECT * FROM $table order by random() limit 100;";
+            print "Statement:     $statement\n";
+            
+            ### Prepare and execute the SQL statement
+            my $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
+                #or warn "Can't prepare SQL statement: $DBI::errstr\n"
+                #and $skip = 1;
+            eval { $sth_rdb->execute() };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
+            unless ($skip) {
+                my $result_table_ref = $sth_rdb->fetchall_arrayref;
+                #print @{${$result_table_ref}[0]};
+                #print "@{[ $#{${$result_table_ref}[0]} + 1 ]} fields\n";
+                print "$sth_rdb->{NUM_OF_FIELDS} fields\n";
+                #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+                #    print $sth_rdb->{NAME}->[$i];
+                #}
+                #for my $field (@{${$result_table_ref}[0]}) {
+                #    print "($field)"
+                #}
+                #$sth_local = $dbh_local->prepare(“insert into table values (?, ?, ?)”);
+                my $ins = "insert into $table values (";
+                for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+                    $ins .= "?, ";
+                }
+                $ins =~ s/, $//;
+                $ins .= ");";
+                print "$ins\n";
+                my $sth_local = eval { $dbh_local->prepare($ins) };
                 if ($@) {
                     error_handler;
                     $skip = 1;
                 }
+                #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+                #    print "(${${$result_table_ref}[0]}[$i])";
+                #}
+                for my $row (@{$result_table_ref}) {
+                    print "Inserting @{$row}\n";
+                    eval { $sth_local->execute(@{$row}) };
+                    if ($@) {
+                        error_handler;
+                        $skip = 1;
+                    }
+                }
             }
-        }
-    }
-    elsif ($truncate) {
-        ### The SQL statement to remove all rows from each table in test database
-        my $statement = "TRUNCATE TABLE $table;";
-        print "Statement:     $statement\n";
-        ### Prepare and execute the SQL statement
-        my $sth_local = eval { $dbh_local->prepare( $statement ) };
-        if ($@) {
-            error_handler;
-            $skip = 1;
-        }
-            #or warn "Can't prepare SQL statement: $DBI::errstr\n"
-            #and $skip = 1;
-        eval { $sth_local->execute() };
-        if ($@) {
-            error_handler;
-            $skip = 1;
+            last SWITCH;
+        };
+        $truncate && do {
+            ### The SQL statement to remove all rows from each table in test database
+            my $statement = "TRUNCATE TABLE $table;";
+            print "Statement:     $statement\n";
+            ### Prepare and execute the SQL statement
+            my $sth_local = eval { $dbh_local->prepare( $statement ) };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
+                #or warn "Can't prepare SQL statement: $DBI::errstr\n"
+                #and $skip = 1;
+            eval { $sth_local->execute() };
+            if ($@) {
+                error_handler;
+                $skip = 1;
+            }
+            last SWITCH;
         }
     }
 }
