@@ -265,7 +265,12 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $roll_dates && do {
-            if ($table =~ m/actx_ftax/) {
+            %tables_to_roll = ( actx_ftax => "ar_sek_tax_from",
+                                actx_tax01 => "inkar",
+                                actx_tax02 => "inkar",
+                              );
+            # print "Now on $name: matched:  @{[ grep /$name/, keys %tables_to_roll ]}\n";
+            if (grep /$name/, keys %tables_to_roll) {
                 # Primary keys
                 # https://wiki.postgresql.org/wiki/Retrieve_primary_key_columns
                 my $pkey_statement = qq(SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
@@ -284,14 +289,17 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                     push @pkeys, ${$pkey}[0];
                 }
                 
-                my $roll_field = "ar_sek_tax_from";
+                my $roll_field = $tables_to_roll{$name};
                 # my $statement = "SELECT ar_sek_tax_from, orgnr, lnr, priotax, prioandel, priolnr FROM $table";
+                # Fetch the column to roll and all primary keys
                 my $fetch_statement = "SELECT $roll_field, @{[ join ',', @pkeys ]} FROM $table";
                 $sth = $dbh_local->prepare( $fetch_statement ) ;
                 $sth->execute();
                 my $result_table_ref = $sth->fetchall_arrayref;
+                my @rolled_year;
                 for my $row (@{$result_table_ref}) {
                     #print @{$row}, "\n";
+                    # Increase the year by 1
                     push @rolled_year, ${$row}[0] + 1;
                 }
                 
@@ -300,6 +308,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                     # print "Index is: $index\n";
                     $put_statement .= "$pkey = ? AND ";
                 }
+                # Remove last 'AND'
                 $put_statement =~ s/ AND $//;
                 $put_statement .= ";";
                 print "$put_statement\n";
@@ -307,7 +316,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                 my $line = 0;
                 my $put_row;
                 for my $row (@{$result_table_ref}) {
-                    #print "$rolled_year[$line] @{$row}\n";
+                    print "Update: $rolled_year[$line] @{$row}\n";
                     $put_row = "$rolled_year[$line] ";
                     for (my $i=1; $i<=$#{$row}; $i++) {
                         $put_row .= " ${$row}[$i]";
