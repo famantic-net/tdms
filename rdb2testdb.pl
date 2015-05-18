@@ -43,10 +43,17 @@ $verbose = 1 if $opts{v};
 # Mapping of table to relevant column
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
+open LOG, ">>", "testdb_populate.log" or warn "Can't open 'testdb_populate.log' for logging: $!\n";
+
 sub trace_print {
-    # If not enabled do nothing
-    return unless $verbose;
-    print @_;
+    ## If not enabled do nothing
+    # return unless $verbose;
+    if ($verbose) {
+        print STDOUT @_;
+    }
+    else {
+        print LOG @_;
+    }
 }
 
 #$dbh_local = DBI->connect('dbi:Pg:dbname=DB2REP;
@@ -227,6 +234,10 @@ sub populate {
                             for my $row (@{$result_table_ref}) {
                                 trace_print "Inserting: @{$row}\n";
                                 eval { $sth_local->execute(@{$row}) };
+                                if ($@) {
+                                    warn "Can't insert @{$row}\n$DBI::errstr\n";
+                                }
+                                
                             }
                         }
                     }
@@ -239,61 +250,3 @@ sub populate {
 populate "org";
 populate "people";
 
-
-#print "\nFetching from $company_entry[0]\n";
-#our $statement = "SELECT * FROM $company_entry[0] order by random() limit 100";
-#our $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
-#$sth_rdb->execute();
-#
-# Prepare the insert statement with the number of columns
-#our $ins = "INSERT INTO $company_entry[0] VALUES (";
-#for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-#    $ins .= "?, ";
-#}
-#$ins =~ s/, $//;
-#$ins .= ");";
-##print "$ins\n";
-#
-#our $sth_local = eval { $dbh_local->prepare($ins) };
-#my $fields = $sth_rdb->{NUM_OF_FIELDS};
-# Find the column that contains the key
-#for ( my $i = 0 ; $i < $fields ; $i++ ) {
-#    #print $sth_rdb->{NAME}->[$i];
-#    $company_num_col = $i if $sth_rdb->{NAME}->[$i] eq $company_entry[1]; 
-#}
-#
-#our @companies;
-# Get the result set, store the key elements and insert the result set locally
-#our $result_ref = $sth_rdb->fetchall_arrayref;
-#for my $row (@{ $result_ref }) {
-#    #print ${$row}[0];
-#    push @companies, ${$row}[$company_num_col];
-#    #print "Inserting @{$row}\n";
-#    eval { $sth_local->execute(@{$row}) };
-# }
-#
-## For every table with a company number relation fetch the rows that correspond
-## to the fetched companies
-#for my $table (keys %orgnum_name) {
-#    print "\nFetching from $table\n";
-#    for my $num (@companies) {
-#        $statement = "SELECT * FROM $table WHERE $orgnum_name{$table}='$num'";
-#        #print "$statement\n";
-#        $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
-#        $sth_rdb->execute();
-#        my $result_table_ref = $sth_rdb->fetchall_arrayref;
-#        $ins = "INSERT INTO $table VALUES (";
-#        for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-#            $ins .= "?, ";
-#        }
-#        $ins =~ s/, $//;
-#        $ins .= ");";
-#        #print "$ins\n";
-#        my $sth_local = eval { $dbh_local->prepare($ins) };
-#        for my $row (@{$result_table_ref}) {
-#            print "Inserting: @{$row}\n";
-#            eval { $sth_local->execute(@{$row}) };
-#        }
-#        
-#    }
-#}
