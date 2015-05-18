@@ -56,7 +56,7 @@ C<rdb_data.pl -p>
 
 =over 4
 
-(Pseudo) populate the local RDB replica.
+(Pseudo) populate the local RDB replica. Fetches a specified number of random rows for each table.
 
 Use F<rdb2testdb.pl> for proper coherent population.
 
@@ -159,14 +159,6 @@ unless ($localdb) {
                             {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                         );
 }
-#@tables = $dbh_rdb->tables();
-#for $table (@tables) {
-#    print "$table\n";
-#}
-#@books = @{ $dbh_local->selectall_arrayref("SELECT * FROM books",  { Slice => {} }) };
-#for $book (@books) {
-#    print "$book->{title}\n";
-#}
 
 
 unless ($localdb) {
@@ -265,20 +257,21 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $roll_dates && do {
-            %tables_to_roll = ( actx_ftax => "ar_sek_tax_from",
-                                actx_tax01 => "inkar",
-                                actx_tax02 => "inkar",
+            %tables_to_roll = ( actx_ftax =>  [ "ar_sek_tax_from", "tr_datum" ],
+                                actx_tax01 => [ "inkar" ],
+                                actx_tax02 => [ "inkar" ],
+                                acib_acitboa => [ "boa_slut_per", "boa_trans_dat" ],
                               );
             # print "Now on $name: matched:  @{[ grep /$name/, keys %tables_to_roll ]}\n";
             if (grep /$name/, keys %tables_to_roll) {
                 # Primary keys
                 # https://wiki.postgresql.org/wiki/Retrieve_primary_key_columns
                 my $pkey_statement = qq(SELECT a.attname, format_type(a.atttypid, a.atttypmod) AS data_type
-                    FROM   pg_index i
-                    JOIN   pg_attribute a ON a.attrelid = i.indrelid
-                                         AND a.attnum = ANY(i.indkey)
-                    WHERE  i.indrelid = '$table'::regclass
-                    AND    i.indisprimary;);
+                                            FROM   pg_index i
+                                            JOIN   pg_attribute a ON a.attrelid = i.indrelid
+                                                                 AND a.attnum = ANY(i.indkey)
+                                            WHERE  i.indrelid = '$table'::regclass
+                                            AND    i.indisprimary;);
                 my $sth = $dbh_local->prepare( $pkey_statement );
                 $sth->execute();
                 my $pkey_arr_ref = $sth->fetchall_arrayref;
@@ -289,41 +282,51 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                     push @pkeys, ${$pkey}[0];
                 }
                 
-                my $roll_field = $tables_to_roll{$name};
-                # my $statement = "SELECT ar_sek_tax_from, orgnr, lnr, priotax, prioandel, priolnr FROM $table";
-                # Fetch the column to roll and all primary keys
-                my $fetch_statement = "SELECT $roll_field, @{[ join ',', @pkeys ]} FROM $table";
-                $sth = $dbh_local->prepare( $fetch_statement ) ;
-                $sth->execute();
-                my $result_table_ref = $sth->fetchall_arrayref;
-                my @rolled_year;
-                for my $row (@{$result_table_ref}) {
-                    #print @{$row}, "\n";
-                    # Increase the year by 1
-                    push @rolled_year, ${$row}[0] + 1;
-                }
-                
-                my $put_statement = "UPDATE $table SET $roll_field = ? WHERE ";
-                for my $pkey (@pkeys) {
-                    # print "Index is: $index\n";
-                    $put_statement .= "$pkey = ? AND ";
-                }
-                # Remove last 'AND'
-                $put_statement =~ s/ AND $//;
-                $put_statement .= ";";
-                print "$put_statement\n";
-                $sth = $dbh_local->prepare($put_statement);
-                my $line = 0;
-                my $put_row;
-                for my $row (@{$result_table_ref}) {
-                    print "Update: $rolled_year[$line] @{$row}\n";
-                    $put_row = "$rolled_year[$line] ";
-                    for (my $i=1; $i<=$#{$row}; $i++) {
-                        $put_row .= " ${$row}[$i]";
+                for my $roll_field (@{$tables_to_roll{$name}}) {
+                    # my $roll_field = $tables_to_roll{$name}[0];
+                    # Fetch the column to roll and all primary keys
+                    my $fetch_statement = "SELECT $roll_field, @{[ join ',', @pkeys ]} FROM $table";
+                    $sth = $dbh_local->prepare( $fetch_statement ) ;
+                    $sth->execute();
+                    my $result_table_ref = $sth->fetchall_arrayref;
+                    my @rolled_year;
+                    # Sort the result set in descending order so that the updates occur from latest
+                    # date first in order top avoid errors due to duplication
+                    my @sorted_result_table = sort {${$b}[0] <=> ${$a}[0]} @{$result_table_ref};
+                    #for my $row (@{$result_table_ref}) {
+                    for my $row (@sorted_result_table) {
+                        #print @{$row}, "\n";
+                        # Increase the year by 1
+                        unless (length(${$row}[0]) > 8) {
+                            # print ${$row}[0], "->", ${$row}[0] + (length(${$row}[0]) == 4 ? 1 : length(${$row}[0]) == 6 ? 100 : length(${$row}[0]) == 8 ? 10000 : 0), "\n";
+                            push @rolled_year, ${$row}[0] + (length(${$row}[0]) == 4 ? 1 : length(${$row}[0]) == 6 ? 100 : length(${$row}[0]) == 8 ? 10000 : 0);
+                        }
+                        else {
+                            my $rolled_year = sub {$_ = shift; s/^(\d+)/$1+1/e; return $_};
+                            push @rolled_year, &{$rolled_year}(${$row}[0]);
+                        }
                     }
-                    print "Inserting $put_row\n";
-                    $sth->execute(split /\s+/, $put_row);
-                    $line++;
+                    my $put_statement = "UPDATE $table SET $roll_field = ? WHERE ";
+                    for my $pkey (@pkeys) {
+                        $put_statement .= "$pkey = ? AND ";
+                    }
+                    $put_statement =~ s/ AND $//; # Remove last 'AND'
+                    $put_statement .= ";";
+                    print "$put_statement\n";
+                    $sth = $dbh_local->prepare($put_statement);
+                    my $line = 0;
+                    my @put_row;
+                    #for my $row (@{$result_table_ref}) {
+                    for my $row (@sorted_result_table) {
+                        print "Update: $rolled_year[$line] @{$row}\n";
+                        @put_row = "$rolled_year[$line] ";
+                        for (my $i=1; $i<=$#{$row}; $i++) {
+                            push @put_row, ${$row}[$i];
+                        }
+                        print "Inserting @{[ join ' ', @put_row ]}\n";
+                        $sth->execute(@put_row);
+                        $line++;
+                    }
                 }
                 $sth->finish();
             }
