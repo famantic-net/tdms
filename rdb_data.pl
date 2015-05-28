@@ -25,13 +25,6 @@ Perform the action locally, ie on the machine where the script runs.
 
 Display metadata for all tables.
 
-=item -p
-
-Populate local tables. This will fetch 100 random rows for each table from RDB.
-
-Note, the tables will not be coherent, ie no consideration is made that the keys
-correspond between tables.
-
 =item -r
 
 Roll dates, i.e update certain timestamps.
@@ -86,11 +79,10 @@ use Getopt::Std;
 #getopts("E:cdelx:", \%opts);
 #$envpass = $opts{E} if $opts{E};
 #$commit = 1 if $opts{c};
-getopts("cdlmprt", \%opts);
+getopts("cdlmrt", \%opts);
 $localdb = 1 if $opts{l};
 $metadata = 1 if $opts{m};
 $count = 1 if $opts{c};
-$populate = 1 if $opts{p};
 $roll_dates = 1 if $opts{r};
 $timestamps = 1 if $opts{t};
 $truncate = 1 if $opts{d};
@@ -377,64 +369,6 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                 print "$table\n@timestamps\n\n" if $found;
             }
             $sth->finish();
-            last SWITCH;
-        };
-        $populate && do {
-            my @row;
-            
-            ### The SQL statement to fetch random rows from each table
-            my $statement = "SELECT * FROM $table order by random() limit 100;";
-            print "Statement:     $statement\n";
-            
-            ### Prepare and execute the SQL statement
-            my $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
-            if ($@) {
-                error_handler;
-                $skip = 1;
-            }
-                #or warn "Can't prepare SQL statement: $DBI::errstr\n"
-                #and $skip = 1;
-            eval { $sth_rdb->execute() };
-            if ($@) {
-                error_handler;
-                $skip = 1;
-            }
-            unless ($skip) {
-                my $result_table_ref = $sth_rdb->fetchall_arrayref;
-                #print @{${$result_table_ref}[0]};
-                #print "@{[ $#{${$result_table_ref}[0]} + 1 ]} fields\n";
-                print "$sth_rdb->{NUM_OF_FIELDS} fields\n";
-                #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-                #    print $sth_rdb->{NAME}->[$i];
-                #}
-                #for my $field (@{${$result_table_ref}[0]}) {
-                #    print "($field)"
-                #}
-                #$sth_local = $dbh_local->prepare(“insert into table values (?, ?, ?)”);
-                my $ins = "insert into $table values (";
-                for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-                    $ins .= "?, ";
-                }
-                $ins =~ s/, $//;
-                $ins .= ");";
-                print "$ins\n";
-                my $sth_local = eval { $dbh_local->prepare($ins) };
-                if ($@) {
-                    error_handler;
-                    $skip = 1;
-                }
-                #for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-                #    print "(${${$result_table_ref}[0]}[$i])";
-                #}
-                for my $row (@{$result_table_ref}) {
-                    print "Inserting @{$row}\n";
-                    eval { $sth_local->execute(@{$row}) };
-                    if ($@) {
-                        error_handler;
-                        $skip = 1;
-                    }
-                }
-            }
             last SWITCH;
         };
         $truncate && do {
