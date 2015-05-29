@@ -1,6 +1,10 @@
 #!/usr/bin/env perl
 =pod
 
+=head1 Synopsis
+
+rdb_data.pl -[cdlmrtv]
+
 =head1 Purpose
 
 Helper functions for Test Data Management System work.
@@ -33,6 +37,10 @@ Roll dates, i.e update certain timestamps.
 
 Display fileds that are defined as C<SQL_TIMESTAMP> from all tables.
 
+=item -v
+
+Turn on verbose prints to STDOUT about what's happening.
+
 =back
 
 =head1 Examples
@@ -42,16 +50,6 @@ C<rdb_data.pl -lm>
 =over 4
 
 Show metadata for the local RDB replica.
-
-=back
-
-C<rdb_data.pl -p>
-
-=over 4
-
-(Pseudo) populate the local RDB replica. Fetches a specified number of random rows for each table.
-
-Use F<rdb2testdb.pl> for proper coherent population.
 
 =back
 
@@ -71,6 +69,10 @@ Truncate all local tables.
 
 =back
 
+=head1 Files
+
+F<rdb2testdb.conf>
+
 =cut
 
 use DBI;
@@ -79,16 +81,26 @@ use Getopt::Std;
 #getopts("E:cdelx:", \%opts);
 #$envpass = $opts{E} if $opts{E};
 #$commit = 1 if $opts{c};
-getopts("cdlmrt", \%opts);
+getopts("cdlmrtv", \%opts);
 $localdb = 1 if $opts{l};
 $metadata = 1 if $opts{m};
 $count = 1 if $opts{c};
 $roll_dates = 1 if $opts{r};
 $timestamps = 1 if $opts{t};
 $truncate = 1 if $opts{d};
+$verbose = 1 if $opts{v};
+
+if ($#{[ keys %opts ]} < 0) {
+    print "Need some argument!\n";
+    print "Usage: $0 -[cdlmrtv]\n";
+    print "Or try 'perldoc $0'\n";
+    exit 1;
+}
+
 
 $localdb = 1 if $truncate or $roll_dates;
 
+require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
 sub error_handler {
     
@@ -107,6 +119,17 @@ sub error_handler {
     {
       die $@; #re-throw the die
     }
+}
+
+sub trace_print {
+    # If not enabled do nothing
+     return unless $verbose;
+    if ($verbose) {
+        print STDOUT @_;
+    }
+    #else {
+    #    print LOG @_;
+    #}
 }
 
 %types = (
@@ -135,21 +158,21 @@ sub error_handler {
 );
 
 
-$dbh_local = DBI->connect('dbi:Pg:dbname=DB2REP;
-                        host=127.0.0.1;
-                        port=5432',
-                        'db2moto',
-                        '',
-                        {AutoCommit=>1,RaiseError=>1,PrintError=>0}
+$dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
+                          host='$local_host';
+                          port='$local_dbport'",
+                          "$local_dbuid",
+                          "$local_dbpwd",
+                          {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                     );
 unless ($localdb) {
-    $dbh_rdb = DBI->connect('dbi:Pg:dbname=DB2REP;
-                            host=10.46.117.29;
-                            port=5432',
-                            'nenant',
-                            'nenant',
-                            {AutoCommit=>1,RaiseError=>1,PrintError=>0}
-                        );
+    $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
+                        host='$remote_host';
+                        port='$remote_dbport'",
+                        "$remote_dbuid",
+                        "$remote_dbpwd",
+                        {AutoCommit=>1,RaiseError=>1,PrintError=>0}
+                    );
 }
 
 
@@ -254,7 +277,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                                 actx_tax02 => [ "inkar" ],
                                 acib_acitboa => [ "boa_slut_per", "boa_trans_dat" ],
                               );
-            # print "Now on $name: matched:  @{[ grep /$name/, keys %tables_to_roll ]}\n";
+            # trace_print "Now on $name: matched:  @{[ grep /$name/, keys %tables_to_roll ]}\n";
             if (grep /$name/, keys %tables_to_roll) {
                 # Primary keys
                 # https://wiki.postgresql.org/wiki/Retrieve_primary_key_columns
@@ -270,7 +293,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                 my @pkeys;
                 for my $pkey (@{$pkey_arr_ref}) {
                     # The key name is in the first element
-                    #print "Pkey: ${$pkey}[0]\n";
+                    #trace_print "Pkey: ${$pkey}[0]\n";
                     push @pkeys, ${$pkey}[0];
                 }
                 
@@ -287,10 +310,10 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                     my @sorted_result_table = sort {${$b}[0] <=> ${$a}[0]} @{$result_table_ref};
                     #for my $row (@{$result_table_ref}) {
                     for my $row (@sorted_result_table) {
-                        #print @{$row}, "\n";
+                        #trace_print @{$row}, "\n";
                         # Increase the year by 1
                         unless (length(${$row}[0]) > 8) {
-                            # print ${$row}[0], "->", ${$row}[0] + (length(${$row}[0]) == 4 ? 1 : length(${$row}[0]) == 6 ? 100 : length(${$row}[0]) == 8 ? 10000 : 0), "\n";
+                            # trace_print ${$row}[0], "->", ${$row}[0] + (length(${$row}[0]) == 4 ? 1 : length(${$row}[0]) == 6 ? 100 : length(${$row}[0]) == 8 ? 10000 : 0), "\n";
                             push @rolled_year, ${$row}[0] + (length(${$row}[0]) == 4 ? 1 : length(${$row}[0]) == 6 ? 100 : length(${$row}[0]) == 8 ? 10000 : 0);
                         }
                         else {
@@ -304,18 +327,18 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                     }
                     $put_statement =~ s/ AND $//; # Remove last 'AND'
                     $put_statement .= ";";
-                    print "$put_statement\n";
+                    trace_print "$put_statement\n";
                     $sth = $dbh_local->prepare($put_statement);
                     my $line = 0;
                     my @put_row;
                     #for my $row (@{$result_table_ref}) {
                     for my $row (@sorted_result_table) {
-                        print "Update: $rolled_year[$line] @{$row}\n";
+                        trace_print "Update: $rolled_year[$line] @{$row}\n";
                         @put_row = "$rolled_year[$line] ";
                         for (my $i=1; $i<=$#{$row}; $i++) {
                             push @put_row, ${$row}[$i];
                         }
-                        print "Inserting @{[ join ' ', @put_row ]}\n";
+                        trace_print "Inserting @{[ join ' ', @put_row ]}\n";
                         $sth->execute(@put_row);
                         $line++;
                     }
