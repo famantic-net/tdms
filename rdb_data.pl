@@ -1,4 +1,5 @@
 #!/usr/bin/env perl
+
 =pod
 
 =head1 Synopsis
@@ -75,16 +76,22 @@ F<rdb2testdb.conf>
 
 =cut
 
+use lib "$ENV{HOME}/jobs/rdb/rdb_data";
 use DBI;
 use Getopt::Std;
+use Anonymize;
+
+require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
 #getopts("E:cdelx:", \%opts);
 #$envpass = $opts{E} if $opts{E};
 #$commit = 1 if $opts{c};
-getopts("cdlmrtv", \%opts);
+getopts("acdlmprtv", \%opts);
+$anonymize = 1 if $opts{a};
 $localdb = 1 if $opts{l};
 $metadata = 1 if $opts{m};
 $count = 1 if $opts{c};
+$populated = 1 if $opts{p};
 $roll_dates = 1 if $opts{r};
 $timestamps = 1 if $opts{t};
 $truncate = 1 if $opts{d};
@@ -99,8 +106,6 @@ if ($#{[ keys %opts ]} < 0) {
 
 
 $localdb = 1 if $truncate or $roll_dates;
-
-require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
 sub error_handler {
     
@@ -158,6 +163,13 @@ sub trace_print {
 );
 
 
+if ($anonymize) {
+    my $handle = Anonymize->orgname;
+    print keys %{$handle};
+    exit;
+}
+
+
 $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
                           host='$local_host';
                           port='$local_dbport'",
@@ -196,7 +208,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
     ### Build the full table name with quoting if required
     $table = qq{$owner."$table"} if defined $owner;
     
-    unless ($timestamps or $roll_dates) {
+    unless ($timestamps or $roll_dates or $populated) {
         print "\n";
         print "Table Information\n";
         print "=================\n";
@@ -269,6 +281,25 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             ### Explicitly deallocate the statement resources
             ### because we didn't fetch all the data
             $sth->finish();
+            last SWITCH;
+        };
+        $populated && do {
+            my $dbh = $localdb ? $dbh_local : $dbh_rdb;
+            my $statement = "SELECT count(*) FROM $table";
+            my $sth = eval { $dbh->prepare( $statement ) };
+            eval { $sth->execute() };
+            last SWITCH if $@;
+            my $result_table_ref = $sth->fetchall_arrayref;
+            my $rows = ${${$result_table_ref}[0]}[0];
+            if ($rows > 0) {
+                $statement = "SELECT * FROM $table order by random() limit 1";
+                $sth = $dbh->prepare( $statement );
+                $sth->execute();
+                my $idx = 0;
+                $result_table_ref = $sth->fetchall_arrayref;
+                print "$name\n";
+                map { print "[$idx]<$_>${${$result_table_ref}[0]}[$idx++]\n"; } @{$sth->{NAME}}, "\n";
+            };
             last SWITCH;
         };
         $roll_dates && do {
