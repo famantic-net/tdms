@@ -45,7 +45,7 @@ our %Anonymize = (
         nsdb_sync => [ qw(ftg_org_num) ],
         nyckeltal => [ qw(org_num) ],
     },
-    orgnr => {
+    orgnum => {
         acba_ratindik => [ qw(orgnr) ],
         acba_rating => [ qw(orgnr) ],
         acba_scoring2 => [ qw(orgnr) ],
@@ -82,7 +82,7 @@ our %Anonymize = (
         nsdb_sync => [ qw(ftg_org_num) ],
         nyckeltal => [ qw(org_num) ],
     },
-    pnr => {
+    pnum => {
         acin_intr20 => [ qw(pnr) ],
         acin_intr40 => [ qw(pnr) ],
         acpr_prtpr => [ qw(pnr pnr12 rel_pnr) ],

@@ -76,18 +76,15 @@ F<rdb2testdb.conf>
 
 =cut
 
-use lib "$ENV{HOME}/jobs/rdb/rdb_data";
 use DBI;
 use Getopt::Std;
-use Anonymize;
 
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
 #getopts("E:cdelx:", \%opts);
 #$envpass = $opts{E} if $opts{E};
 #$commit = 1 if $opts{c};
-getopts("acdlmprtv", \%opts);
-$anonymize = 1 if $opts{a};
+getopts("cdlmprtv", \%opts);
 $localdb = 1 if $opts{l};
 $metadata = 1 if $opts{m};
 $count = 1 if $opts{c};
@@ -162,12 +159,6 @@ sub trace_print {
   -10 => "SQL_WLONGVARCHAR",   
 );
 
-
-if ($anonymize) {
-    my $handle = Anonymize->orgname;
-    print keys %{$handle};
-    exit;
-}
 
 
 $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';

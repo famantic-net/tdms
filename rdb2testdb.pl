@@ -36,12 +36,27 @@ Nothing yet. :(
 use DBI;
 use Getopt::Std;
 
-getopts("sv", \%opts);
-$specific = 1 if $opts{s};
-$verbose = 1 if $opts{v};
+use lib "$ENV{HOME}/jobs/rdb/rdb_data";
+use OrgNum;
+use PersonNum;
+use OrgName;
+use PersonName;
+use Address;
 
 # Mapping of table to relevant column
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
+
+getopts("asv", \%opts);
+$anonymize = 1 if $opts{a};
+$specific = 1 if $opts{s};
+$verbose = 1 if $opts{v};
+
+if ($anonymize) {
+    my $handle = new Address;
+    $handle->list_attr;
+    exit;
+}
+
 
 open LOG, ">>", "testdb_populate.log" or warn "Can't open 'testdb_populate.log' for logging: $!\n";
 
