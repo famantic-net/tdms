@@ -37,11 +37,7 @@ use DBI;
 use Getopt::Std;
 
 use lib "$ENV{HOME}/jobs/rdb/rdb_data";
-use OrgNum;
-use PersonNum;
-use OrgName;
-use PersonName;
-use Address;
+use Anonymize;
 
 # Mapping of table to relevant column
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
@@ -51,11 +47,11 @@ $anonymize = 1 if $opts{a};
 $specific = 1 if $opts{s};
 $verbose = 1 if $opts{v};
 
-if ($anonymize) {
-    my $handle = new Address;
-    $handle->list_attr;
-    exit;
-}
+#if ($anonymize) {
+#    my $handle = new OrgNum;
+#    print join "\n", $handle->list_attr;
+#    exit;
+#}
 
 
 open LOG, ">>", "testdb_populate.log" or warn "Can't open 'testdb_populate.log' for logging: $!\n";
@@ -119,27 +115,29 @@ $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
 
 
 sub populate {
-    my (@entry_table, %name_hash);
+    my (@entry_tuple, %name_hash);
     my $target = shift;
     trace_print "=== Processing $target ===\n";
-    SWITCH: {
-        ($target eq "org") && do { @entry_table = @company_entry;
-                                   %name_hash = %orgnum_name;
-                                   last SWITCH;
-                                 };
-        ($target eq "people") && do { @entry_table = @person_entry;
-                                      %name_hash = %pnr_name;
-                                      last SWITCH;
-                                    };
+    SWITCH: for ($target) {
+        /organizations/ && do {
+            @entry_tuple = @company_entry;
+            %name_hash = %orgnum_name;
+            last SWITCH;
+       };
+        /people/ && do {
+            @entry_tuple = @person_entry;
+            %name_hash = %pnr_name;
+            last SWITCH;
+       };
     }
-    trace_print "\n--- Fetching from $entry_table[0] ---\n";
+    trace_print "\n--- Fetching from $entry_tuple[0] ---\n";
     my $statement;
     my $sth_rdb;
     my $result_ref;
     if ($specific) {
         @test_list = $target eq "org" ? @test_businesses : @test_persons;
         for my $test_item (@test_list) {
-            $statement = "SELECT * FROM $entry_table[0] where $entry_table[1]=$test_item";
+            $statement = "SELECT * FROM $entry_tuple[0] where $entry_tuple[1]=$test_item";
             $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
             $sth_rdb->execute();
             $result_ref = $sth_rdb->fetchall_arrayref;
@@ -147,7 +145,7 @@ sub populate {
         }
     }
     else {
-        $statement = "SELECT * FROM $entry_table[0] order by random() limit $init_size";
+        $statement = "SELECT * FROM $entry_tuple[0] order by random() limit $init_size";
         $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
         $sth_rdb->execute();
         $result_ref = $sth_rdb->fetchall_arrayref;
@@ -155,7 +153,7 @@ sub populate {
     }
     
     # Prepare the insert statement with the number of columns
-    my $ins = "INSERT INTO $entry_table[0] VALUES (";
+    my $ins = "INSERT INTO $entry_tuple[0] VALUES (";
     for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
         $ins .= "?, ";
     }
@@ -167,7 +165,7 @@ sub populate {
     # Find the column that contains the key
     for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
         #trace_print $sth_rdb->{NAME}->[$i];
-        $number_column = $i if $sth_rdb->{NAME}->[$i] eq $entry_table[1]; 
+        $number_column = $i if $sth_rdb->{NAME}->[$i] eq $entry_tuple[1]; 
     }
     
     my @collection;
@@ -175,6 +173,12 @@ sub populate {
     for my $row (@result_set) {
         #trace_print ${$row}[0];
         push @collection, ${$row}[$number_column];
+        # Transform the row into anonymous data
+        if ($anonymize) {
+            trace_print "Anonymizing: @{$row}\n";
+            $row = Anonymize->idnum($target, $entry_tuple[0], $row);
+            exit;
+        }
         trace_print "Inserting: @{$row}\n";
         eval { $sth_local->execute(@{$row}) };
      }
@@ -262,6 +266,9 @@ sub populate {
     }
 }
 
-populate "org";
-populate "people";
+for my $target (@targets) {
+    #populate "organization";
+    #populate "people";
+    populate $target;
+}
 
