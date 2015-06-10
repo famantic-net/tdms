@@ -38,6 +38,7 @@ use Getopt::Std;
 
 use lib "$ENV{HOME}/jobs/rdb/rdb_data";
 use Anonymize;
+use OrgNum;
 
 # Mapping of table to relevant column
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
@@ -115,7 +116,8 @@ $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
 
 
 sub populate {
-    my (@entry_tuple, %name_hash);
+    local @entry_tuple;
+    my %name_hash;
     my $target = shift;
     trace_print "=== Processing $target ===\n";
     SWITCH: for ($target) {
@@ -132,7 +134,7 @@ sub populate {
     }
     trace_print "\n--- Fetching from $entry_tuple[0] ---\n";
     my $statement;
-    my $sth_rdb;
+    local $sth_rdb;
     my $result_ref;
     if ($specific) {
         @test_list = $target eq "org" ? @test_businesses : @test_persons;
@@ -170,18 +172,19 @@ sub populate {
     
     my @collection;
     # Get the result set, store the key elements and insert the result set locally
-    for my $row (@result_set) {
+    local $row;
+    for $row (@result_set) {
         #trace_print ${$row}[0];
         push @collection, ${$row}[$number_column];
         # Transform the row into anonymous data
         if ($anonymize) {
             trace_print "Anonymizing: @{$row}\n";
-            $row = Anonymize->idnum($target, $entry_tuple[0], $row);
-            exit;
+            $row = Anonymize->idNum($target, \@entry_tuple, $sth_rdb, $row);
         }
-        trace_print "Inserting: @{$row}\n";
-        eval { $sth_local->execute(@{$row}) };
+        trace_print "Inserting  : @{$row}\n";
+        #eval { $sth_local->execute(@{$row}) };
      }
+    return;
     
     # For every table with an identity number relation fetch the rows that correspond
     # to the keys in the fetched collection
