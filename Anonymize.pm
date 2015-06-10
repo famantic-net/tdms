@@ -26,7 +26,12 @@ sub idNum { #
                 #print ${$row}[$field_num], "\n";
             }
             last SWITCH;
-        }
+        };
+        /people/ && do {
+            my $pnum = new PersonNum;
+            ${$row}[$field_num] = $pnum->randomize_number(${$row}[$field_num]);
+            last SWITCH;
+        };
     }
     return $row;
 }

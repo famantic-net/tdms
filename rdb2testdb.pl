@@ -270,7 +270,7 @@ sub populate {
 }
 
 for my $target (@targets) {
-    #populate "organization";
+    #populate "organizations";
     #populate "people";
     populate $target;
 }
