@@ -10,7 +10,7 @@ use anon::PersonName;
 sub idNum { # 
     my $invocant = shift;
     my $class = ref($invocant) || $invocant;
-    my ($target, $table, $sth, $row) = @_;
+    my ($target, $table, $sth, $row, $test_list) = @_;
     # Find the column that contains the key
     my $field_num = sub {
         my $field = shift;
@@ -23,7 +23,7 @@ sub idNum { #
             my $orgnum = new OrgNum;
             if (grep /$table/, $orgnum->list_attr) {
                 for my $field (@{$orgnum->fields($table)}) {
-                    ${$row}[&{$field_num}($field)] = $orgnum->randomize_org_number(${$row}[&{$field_num}($field)]);
+                    ${$row}[&{$field_num}($field)] = $orgnum->randomize_org_number(${$row}[&{$field_num}($field)], $test_list);
                 }
                 #print @{$orgnum->fields(${$tuple}[0])}, "\n";
                 #print grep {/$sth->{NAME}->[$field_num]/} @{$sth->{NAME}}, "\n";
@@ -46,7 +46,7 @@ sub idNum { #
             my $pnum = new PersonNum;
             if (grep /$table/, $pnum->list_attr) {
                 for my $field (@{$pnum->fields($table)}) {
-                    ${$row}[&{$field_num}($field)] = $pnum->randomize_person_number(${$row}[&{$field_num}($field)]);
+                    ${$row}[&{$field_num}($field)] = $pnum->randomize_person_number(${$row}[&{$field_num}($field)], $test_list);
                 }
             }
             my $pname = new PersonName;

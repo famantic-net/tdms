@@ -18,6 +18,7 @@ sub new() {
 sub randomize_person_number {
     my $self = shift;
     my $pnum = shift;
+    my $test_list= shift;
     return $pnum unless $pnum; # If empty return what came in
     #print "Received: $pnum\n";
     unless ($anonymized{$pnum}) { # Already anonymized
@@ -35,10 +36,14 @@ sub randomize_person_number {
         else {
             die "Problem with person number format: $pnum";
         }
-        my $month = sprintf "%02d", int(rand(12)) + 1;
-        my $day = sprintf "%02d", int(rand(27)) + 1;
-        my $ordinal = sprintf "%03d", int(rand(1000));
-        my $anon_number = $lead_dig . $month . $day . $ordinal . $self->_control_digit($lead_dig, $month, $day, $ordinal);
+        my $anon_number;
+        # Avoid creating a person number that clashes with the predefined testobjects
+        do {
+            my $month = sprintf "%02d", int(rand(12)) + 1;
+            my $day = sprintf "%02d", int(rand(27)) + 1;
+            my $ordinal = sprintf "%03d", int(rand(1000));
+            $anon_number = $lead_dig . $month . $day . $ordinal . $self->_control_digit($lead_dig, $month, $day, $ordinal);
+        } while (grep /$anon_number/, @{$test_list});
         $anonymized{$pnum} = $anon_number;
     }
     return $anonymized{$pnum};

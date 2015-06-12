@@ -47,6 +47,12 @@ $anonymize = 1 if $opts{a};
 $specific = 1 if $opts{s};
 $verbose = 1 if $opts{v};
 
+if ($anonymize and $specific) {
+    print "Refusing to anonymize the predefined test objects.\nUse either -a or -s.\n";
+    exit -1;
+}
+
+
 #if ($anonymize) {
 #    my $handle = new OrgNum;
 #    print join "\n", $handle->list_attr;
@@ -116,6 +122,7 @@ $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
 
 sub populate {
     local @entry_tuple;
+    local @test_list;
     my %name_hash;
     my $target = shift;
     trace_print "=== Processing $target ===\n";
@@ -135,8 +142,8 @@ sub populate {
     my $statement;
     local $sth_rdb;
     my $result_ref;
+    @test_list = $target eq "org" ? @test_businesses : @test_persons;
     if ($specific) {
-        @test_list = $target eq "org" ? @test_businesses : @test_persons;
         for my $test_item (@test_list) {
             $statement = "SELECT * FROM $entry_tuple[0] where $entry_tuple[1]=$test_item";
             $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
@@ -175,10 +182,9 @@ sub populate {
     for $row (@result_set) {
         #trace_print ${$row}[0];
         push @collection, ${$row}[$number_column];
-        # Transform the row into anonymous data
-        if ($anonymize) {
+        if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
-            $row = Anonymize->idNum($target, $entry_tuple[0], $sth_rdb, $row);
+            $row = Anonymize->idNum($target, $entry_tuple[0], $sth_rdb, $row, \@test_list);
         }
         trace_print "Inserting  : @{$row}\n";
         #eval { $sth_local->execute(@{$row}) };
