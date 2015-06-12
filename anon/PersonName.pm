@@ -1,0 +1,99 @@
+package PersonName;
+
+use strict;
+use anon::LegalEntity;
+use anon::AnonymizedFields;
+
+our @ISA = qw(LegalEntity);
+our %anonymized = ();
+our ($surnames, @surnames, $given_names, @given_names);
+
+sub new() {
+    my $class = shift;
+    my $self = AnonymizedFields->pname;
+    return bless $self;
+}
+
+
+#sub list_attr {
+#    my $self = shift;
+#    my $list = shift;
+#    if (grep /$list/, keys %{$self}) {
+#        return sort keys %{${$self}{$list}};
+#    }
+#    else {
+#        die "Can't find the list $list in $self.\n";
+#    }
+#}
+
+
+sub anonymizeName {
+    my $self = shift;
+    my $real_name = shift;
+    my $name_field_len = length($real_name);
+    unless ($anonymized{$real_name}) {
+        #unless ($surnames) {
+        #    local undef $/;
+        #    open my $fh, "<", "surnames.txt" or die "Can't open 'surnames.txt: $!\n'";
+        #    $surnames = <$fh>;
+        #    close $fh;
+        #}
+        #unless ($given_names) {
+        #    open my $fh, "<", "given_names.txt" or die "Can't open 'surnames.txt: $!\n'";
+        #    $given_names = <$fh>;
+        #    close $fh;
+        #}
+        #@surnames = split "\n", $surnames;
+        #@given_names = split "\n", $given_names;
+        #my $srand = int(rand($#surnames+1));
+        #my $grand = int(rand($#given_names+1));
+        #$anonymized{$real_name} = uc(sprintf "%- ${name_field_len}s", "$surnames[$srand], $given_names[$grand] TEST");
+        my ($sname, $gname) = $real_name =~ m/([^,]+),\s*(.*)/;
+        my $anon_sname = $self->anonymizeSurname($sname);
+        $anon_sname =~ s/\s*$//; # Remove trailing space
+        my $anon_gname = $self->anonymizeGivenName($gname);
+        $anon_gname =~ s/\s*$//; # Remove trailing space
+        $anonymized{$real_name} = sprintf "%- ${name_field_len}s", "$anon_sname, $anon_gname";
+    }
+    return $anonymized{$real_name};
+}
+
+sub anonymizeSurname {
+    my $self = shift;
+    my $real_name = shift;
+    my $name_field_len = length($real_name);
+    $real_name =~ s/\s*$//; # Remove trailing space
+    unless ($anonymized{$real_name}) {
+        unless ($surnames) {
+            local undef $/;
+            open my $fh, "<", "surnames.txt" or die "Can't open 'surnames.txt: $!\n'";
+            $surnames = <$fh>;
+            close $fh;
+            @surnames = split "\n", $surnames;
+        }
+        my $srand = int(rand($#surnames+1));
+        $anonymized{$real_name} = uc($surnames[$srand]);
+    }
+    return sprintf "%- ${name_field_len}s", $anonymized{$real_name};
+}
+
+sub anonymizeGivenName {
+    my $self = shift;
+    my $real_name = shift;
+    my $name_field_len = length($real_name);
+    $real_name =~ s/\s*$//; # Remove trailing space
+    unless ($anonymized{$real_name}) {
+        unless ($given_names) {
+            open my $fh, "<", "given_names.txt" or die "Can't open 'surnames.txt: $!\n'";
+            $given_names = <$fh>;
+            close $fh;
+            @given_names = split "\n", $given_names;
+        }
+        my $grand = int(rand($#given_names+1));
+        $anonymized{$real_name} = uc("$given_names[$grand] TEST");
+    }
+    return sprintf "%- ${name_field_len}s", $anonymized{$real_name};
+}
+
+
+1;

@@ -37,8 +37,7 @@ use DBI;
 use Getopt::Std;
 
 use lib "$ENV{HOME}/jobs/rdb/rdb_data";
-use Anonymize;
-use OrgNum;
+use anon::Anonymize;
 
 # Mapping of table to relevant column
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
@@ -179,7 +178,7 @@ sub populate {
         # Transform the row into anonymous data
         if ($anonymize) {
             trace_print "Anonymizing: @{$row}\n";
-            $row = Anonymize->idNum($target, \@entry_tuple, $sth_rdb, $row);
+            $row = Anonymize->idNum($target, $entry_tuple[0], $sth_rdb, $row);
         }
         trace_print "Inserting  : @{$row}\n";
         #eval { $sth_local->execute(@{$row}) };

@@ -1,8 +1,8 @@
 package PersonNum;
 
 use strict;
-use LegalEntity;
-use AnonymizedFields;
+use anon::LegalEntity;
+use anon::AnonymizedFields;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
@@ -13,22 +13,23 @@ sub new() {
     return bless $self;
 }
 
-sub list_attr {
-    my $self = shift;
-    return sort keys %{$self};
-}
 
 # Returns a new person number stub based on the received number
-sub randomize_number {
+sub randomize_person_number {
     my $self = shift;
     my $pnum = shift;
+    return $pnum unless $pnum; # If empty return what came in
     #print "Received: $pnum\n";
-    unless ($anonymized{$pnum}) {
+    unless ($anonymized{$pnum}) { # Already anonymized
         my $lead_dig;
         if (length $pnum == 10 ) {
             ($lead_dig) = $pnum =~ m/^(\d\d)/;
         }
         elsif (length $pnum == 12) {
+            my ($century, $short_pnum) = $pnum =~ m/^(\d\d)(.+)/;
+            if ($anonymized{$short_pnum}) {
+                return $anonymized{$pnum} = $century . $anonymized{$short_pnum}; 
+            }
             ($lead_dig) = $pnum =~ m/^(\d\d\d\d)/;
         }
         else {
@@ -43,30 +44,6 @@ sub randomize_number {
     return $anonymized{$pnum};
 }
 
-
-## Calculates control digit according to 'http://personnummer.se/om'
-#sub __control_digit {
-#    my @orgnum_stub = map { split '' } @_;
-#    #print "@orgnum_stub\n";
-#    my $mult = 2;
-#    my ($partsum, $sum);
-#    for my $digit (@orgnum_stub) {
-#        $mult = ($mult + 1) % 2;
-#        $partsum = $digit * ($mult + 1);
-#        #print "$partsum\n";
-#        if ($partsum > 9) {
-#            my @partsum = split '', $partsum;
-#            #print "@partsum\n";
-#            map {$sum += $_} @partsum
-#        }
-#        else {
-#            $sum += $partsum;
-#        }
-#        #print "::$sum\n";
-#    }
-#    return 10 - ($sum % 10);
-#}
-#
 
 
 
