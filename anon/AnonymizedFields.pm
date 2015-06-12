@@ -10,6 +10,7 @@ use strict;
 
 # Fields to anonymize. Generated from selected entries obtained with 'rdb_data.pl -pl'
 # perl -e 'open(my $fh, "<", "anonymize_me.txt") or die "Cant open"; {local undef $/; $anon = <$fh>};  while ($anon =~ m/(.+?)^>\n/smg) {$block = $1; ($table) = $block =~ m/^([^\n]+)/; my @fields; while ($block =~ m/<([^>]+)>/smg) {push @fields, $1} print "$table => [ qw(@fields) ],\n"}'
+# The keys separate different types
 our %AnonymizedFields = (
     all => {
         acba_ratindik => [ qw(orgnr) ],
@@ -129,12 +130,33 @@ our %AnonymizedFields = (
         },
     },
     address => {
-        acib_acitarn => [ qw(arn_badr arn_bpost_num arn_bport arn_padr arn_ppost_num arn_pport) ],
-        acib_acitefi => [ qw(efi_iadr efi_ipost_num efi_iport efi_kommun efi_lan) ],
-        acib_acitftg => [ qw(ftg_iadr ftg_ipost_num ftg_iport ftg_land_kod) ],
-        acib_acitgaf => [ qw(gaf_iadr gaf_ipost_num gaf_iport) ],
-        acpr_prtpr => [ qw(sp_foadress sp_gatuadress sp_postnr sp_postort utl_landkod utl_postkod utl_postort utl_land mnamn enamn fnamn fbf_coadress fbf_foadress fbf_gatuadress fbf_postnr fbf_postort) ],
-        acpr_prtprh => [ qw(sp_foadress sp_gatuadress sp_postnr sp_postort utl_landkod utl_postkod utl_postort utl_land mnamn enamn fnamn fbf_coadress fbf_foadress fbf_gatuadress fbf_postnr fbf_postort) ],
+        street => {
+            acib_acitarn => [ qw(arn_badr arn_padr) ],
+            acib_acitefi => [ qw(efi_iadr) ],
+            acib_acitftg => [ qw(ftg_iadr) ],
+            acib_acitgaf => [ qw(gaf_iadr) ],
+            acpr_prtpr => [ qw(fbf_gatuadress) ],
+            acpr_prtprh => [ qw(fbf_gatuadress) ],
+        },
+        zip => {
+            acib_acitarn => [ qw(arn_bpost_num arn_ppost_num) ],
+            acib_acitefi => [ qw(efi_ipost_num) ],
+            acib_acitftg => [ qw(ftg_ipost_num) ],
+            acib_acitgaf => [ qw(gaf_ipost_num) ],
+            acpr_prtpr => [ qw(fbf_postnr) ],
+            acpr_prtprh => [ qw(fbf_postnr) ],
+        },
+        municipality => {
+            acib_acitarn => [ qw(arn_bport arn_pport) ],
+            acib_acitefi => [ qw(efi_iport) ],
+            acib_acitftg => [ qw(ftg_iport) ],
+            acib_acitgaf => [ qw(gaf_iport) ],
+            acpr_prtpr => [ qw(fbf_postort) ],
+            acpr_prtprh => [ qw(fbf_postort) ],
+        },
+        country => {
+            acib_acitftg => [ qw(ftg_land_kod) ],
+        },
     },
 );
 
