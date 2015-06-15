@@ -1,17 +1,72 @@
 package Address;
 
 use strict;
-use Anonymize;
+use anon::LegalEntity;
+use anon::AnonymizedFields;
+
+our @ISA = qw(LegalEntity);
+our %anonymized = ();
+our $address_table = "acib_acitpnr";
+our $street_pos = 2;
+our $num_range_low_pos = 4;
+our $num_range_high_pos = 5;
+our $zip_pos = 0;
+our $municipality_pos = 6;
+our ($dbh, $address_id);
 
 sub new() {
     my $class = shift;
+    $dbh = shift;
+    $address_id = shift;
     my $self = AnonymizedFields->address;
     return bless $self;
 }
 
-sub list_attr {
+
+sub anonymizeStreet {
     my $self = shift;
-    return sort keys %{$self};
+    my $real_street = shift;
+    my $street_field_len = length($real_street);
+    unless ($anonymized{$address_id}) {
+        $anonymized{$address_id} = $self->__get_address;
+    }
+    return sprintf "%- ${street_field_len}s", $anonymized{$address_id}[0];
 }
+
+sub anonymizeMunicipality {
+    my $self = shift;
+    my $real_municipality = shift;
+    my $municipality_field_len = length($real_municipality);
+    unless ($anonymized{$address_id}) {
+        $anonymized{$address_id} = $self->__get_address;
+    }
+    return sprintf "%- ${municipality_field_len}s", $anonymized{$address_id}[1];
+}
+
+sub anonymizeZip {
+    my $self = shift;
+    my $real_zip = shift;
+    my $zip_field_len = length($real_zip);
+    unless ($anonymized{$address_id}) {
+        $anonymized{$address_id} = $self->__get_address;
+    }
+    return sprintf "%- ${zip_field_len}s", $anonymized{$address_id}[2];
+}
+
+
+sub __get_address {
+        my $statement = "SELECT * FROM $address_table order by random() limit 1";
+        my $sth = $dbh->prepare( $statement );
+        $sth->execute;
+        my $result_ref = $sth->fetchall_arrayref;
+        my @address_row = @{${$result_ref}[0]};
+        my $street = $address_row[$street_pos];
+        $street =~ s/\s*$//; # Remove trailing space
+        my $street_num = $address_row[$num_range_low_pos] + int(rand($address_row[$num_range_high_pos]-$address_row[$num_range_low_pos]));
+        my $street_addr = $street_num > 0 ? "$street $street_num" : $street;
+        return [ $street_addr, $address_row[$municipality_pos], $address_row[$zip_pos] ];
+}
+
+
 
 1;

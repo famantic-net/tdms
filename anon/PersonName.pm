@@ -15,39 +15,11 @@ sub new() {
 }
 
 
-#sub list_attr {
-#    my $self = shift;
-#    my $list = shift;
-#    if (grep /$list/, keys %{$self}) {
-#        return sort keys %{${$self}{$list}};
-#    }
-#    else {
-#        die "Can't find the list $list in $self.\n";
-#    }
-#}
-
-
 sub anonymizeName {
     my $self = shift;
     my $real_name = shift;
     my $name_field_len = length($real_name);
     unless ($anonymized{$real_name}) {
-        #unless ($surnames) {
-        #    local undef $/;
-        #    open my $fh, "<", "surnames.txt" or die "Can't open 'surnames.txt: $!\n'";
-        #    $surnames = <$fh>;
-        #    close $fh;
-        #}
-        #unless ($given_names) {
-        #    open my $fh, "<", "given_names.txt" or die "Can't open 'surnames.txt: $!\n'";
-        #    $given_names = <$fh>;
-        #    close $fh;
-        #}
-        #@surnames = split "\n", $surnames;
-        #@given_names = split "\n", $given_names;
-        #my $srand = int(rand($#surnames+1));
-        #my $grand = int(rand($#given_names+1));
-        #$anonymized{$real_name} = uc(sprintf "%- ${name_field_len}s", "$surnames[$srand], $given_names[$grand] TEST");
         my ($sname, $gname) = $real_name =~ m/([^,]+),\s*(.*)/;
         my $anon_sname = $self->anonymizeSurname($sname);
         $anon_sname =~ s/\s*$//; # Remove trailing space
@@ -90,7 +62,7 @@ sub anonymizeGivenName {
             @given_names = split "\n", $given_names;
         }
         my $grand = int(rand($#given_names+1));
-        $anonymized{$real_name} = uc("$given_names[$grand] TEST");
+        $anonymized{$real_name} = uc("$given_names[$grand] TESTPERSON");
     }
     return sprintf "%- ${name_field_len}s", $anonymized{$real_name};
 }

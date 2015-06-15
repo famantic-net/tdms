@@ -48,7 +48,8 @@ $specific = 1 if $opts{s};
 $verbose = 1 if $opts{v};
 
 if ($anonymize and $specific) {
-    print "Refusing to anonymize the predefined test objects.\nUse either -a or -s.\n";
+    print "Refusing to anonymize the predefined test objects.\n";
+    print "Use either -a or -s.\n";
     exit -1;
 }
 
@@ -89,7 +90,7 @@ sub trace_print {
 #                        {AutoCommit=>1,RaiseError=>1,PrintError=>0}
 #                    );
 
-$dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
+our $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
                           host='$local_host';
                           port='$local_dbport'",
                           "$local_dbuid",
@@ -97,7 +98,7 @@ $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
                           {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                     );
 
-$dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
+our $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
                         host='$remote_host';
                         port='$remote_dbport'",
                         "$remote_dbuid",
@@ -184,7 +185,7 @@ sub populate {
         push @collection, ${$row}[$number_column];
         if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
-            $row = Anonymize->idNum($target, $entry_tuple[0], $sth_rdb, $row, \@test_list);
+            $row = Anonymize->enact($dbh_rdb, $target, $entry_tuple[0], $sth_rdb, $row, \@test_list);
         }
         trace_print "Inserting  : @{$row}\n";
         #eval { $sth_local->execute(@{$row}) };
