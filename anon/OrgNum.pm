@@ -15,7 +15,7 @@ sub new() {
 
 
 # Returns a new organization number stub based on the received number
-sub randomize_org_number { # $orgnum
+sub anonymizeOrgNumber { # $orgnum
     my $self = shift;
     my $orgnum = shift;
     my $test_list= shift;

@@ -21,31 +21,31 @@ sub enact { #
             return $i if $sth->{NAME}->[$i] eq $field; 
         }
     };
-    my $address_id; # Used to keep address records consistent
+    my $id; # Used to keep table fileds consistent
     SWITCH: for ($target) {
         /organizations/ && do {
             my $orgnum = new OrgNum;
             if (grep /$table/, $orgnum->list_attr) {
                 for my $field (@{$orgnum->fields($table)}) {
-                    $address_id = ${$row}[&{$field_num}($field)];
-                    ${$row}[&{$field_num}($field)] = $orgnum->randomize_org_number(${$row}[&{$field_num}($field)], $test_list);
+                    $id = ${$row}[&{$field_num}($field)];
+                    ${$row}[&{$field_num}($field)] = $orgnum->anonymizeOrgNumber(${$row}[&{$field_num}($field)], $test_list);
                 }
                 #print @{$orgnum->fields(${$tuple}[0])}, "\n";
                 #print grep {/$sth->{NAME}->[$field_num]/} @{$sth->{NAME}}, "\n";
                 #print ${$row}[$field_num], "\n";
             }
-            my $orgname = new OrgName;
+            my $orgname = new OrgName($dbh_rdb, $id);
             if (grep /$table/, $orgname->list_attr("full")) {
-                #for my $field (@{$orgname->fields($table)}) {
-                #    ${$row}[&{$field_num}($field)] = $orgname->randomize_number(${$row}[&{$field_num}($field)]);
-                #}
+                for my $field (@{$orgname->fields('full', $table)}) {
+                    ${$row}[&{$field_num}($field)] = $orgname->anonymizeCompanyName(${$row}[&{$field_num}($field)]);
+                }
             }
             if (grep /$table/, $orgname->list_attr("abbr")) {
                 #for my $field (@{$orgname->fields($table)}) {
                 #    ${$row}[&{$field_num}($field)] = $orgname->randomize_number(${$row}[&{$field_num}($field)]);
                 #}
             }
-            my $address = new Address($dbh_rdb, $address_id);
+            my $address = new Address($dbh_rdb, $id);
             if (grep /$table/, $address->list_attr("street")) {
                 for my $field (@{$address->fields('street', $table)}) {
                     ${$row}[&{$field_num}($field)] = $address->anonymizeStreet(${$row}[&{$field_num}($field)]);
@@ -67,8 +67,8 @@ sub enact { #
             my $pnum = new PersonNum;
             if (grep /$table/, $pnum->list_attr) {
                 for my $field (@{$pnum->fields($table)}) {
-                    $address_id = ${$row}[&{$field_num}($field)];
-                    ${$row}[&{$field_num}($field)] = $pnum->randomize_person_number(${$row}[&{$field_num}($field)], $test_list);
+                    $id = ${$row}[&{$field_num}($field)];
+                    ${$row}[&{$field_num}($field)] = $pnum->anonymizePersonNumber(${$row}[&{$field_num}($field)], $test_list);
                 }
             }
             my $pname = new PersonName;
@@ -87,7 +87,7 @@ sub enact { #
                     ${$row}[&{$field_num}($field)] = $pname->anonymizeSurname(${$row}[&{$field_num}($field)]);
                 }
             }
-            my $address = new Address($dbh_rdb, $address_id);
+            my $address = new Address($dbh_rdb, $id);
             if (grep /$table/, $address->list_attr("street")) {
                 for my $field (@{$address->fields('street', $table)}) {
                     ${$row}[&{$field_num}($field)] = $address->anonymizeStreet(${$row}[&{$field_num}($field)]);

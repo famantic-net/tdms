@@ -15,7 +15,7 @@ sub new() {
 
 
 # Returns a new person number stub based on the received number
-sub randomize_person_number {
+sub anonymizePersonNumber {
     my $self = shift;
     my $pnum = shift;
     my $test_list= shift;
