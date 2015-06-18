@@ -54,12 +54,6 @@ if ($anonymize and $specific) {
 }
 
 
-#if ($anonymize) {
-#    my $handle = new OrgNum;
-#    print join "\n", $handle->list_attr;
-#    exit;
-#}
-
 
 open LOG, ">>", "testdb_populate.log" or warn "Can't open 'testdb_populate.log' for logging: $!\n";
 
@@ -122,8 +116,8 @@ our $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
 
 
 sub populate {
-    local @entry_tuple;
-    local @test_list;
+    my @entry_tuple;
+    my @test_list;
     my %name_hash;
     my $target = shift;
     trace_print "=== Processing $target ===\n";
@@ -179,18 +173,16 @@ sub populate {
     
     my @collection;
     # Get the result set, store the key elements and insert the result set locally
-    local $row;
-    for $row (@result_set) {
+    for my $row (@result_set) {
         #trace_print ${$row}[0];
         push @collection, ${$row}[$number_column];
         if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
-            $row = Anonymize->enact($dbh_rdb, $target, $entry_tuple[0], $sth_rdb, $row, \@test_list);
+            $row = Anonymize->enact($dbh_rdb, $entry_tuple[0], $sth_rdb, $row, \@test_list);
         }
         trace_print "Inserting  : @{$row}\n";
-        #eval { $sth_local->execute(@{$row}) };
+        eval { $sth_local->execute(@{$row}) };
      }
-    return;
     
     # For every table with an identity number relation fetch the rows that correspond
     # to the keys in the fetched collection
@@ -211,7 +203,11 @@ sub populate {
             #trace_print "$ins\n";
             my $sth_local = eval { $dbh_local->prepare($ins) };
             for my $row (@{$result_table_ref}) {
-                trace_print "Inserting: @{$row}\n";
+                if ($anonymize) { # Transform the row into anonymous data
+                    trace_print "Anonymizing: @{$row}\n";
+                    $row = Anonymize->enact($dbh_rdb, $table, $sth_rdb, $row, \@test_list);
+                }
+                trace_print "Inserting  : @{$row}\n";
                 eval { $sth_local->execute(@{$row}) };
             }
             
@@ -260,7 +256,11 @@ sub populate {
                             #trace_print "$ins\n";
                             my $sth_local = eval { $dbh_local->prepare($ins) };
                             for my $row (@{$result_table_ref}) {
-                                trace_print "Inserting: @{$row}\n";
+                                if ($anonymize) { # Transform the row into anonymous data
+                                    trace_print "Anonymizing: @{$row}\n";
+                                    $row = Anonymize->enact($dbh_rdb, $table2, $sth_rdb, $row, \@test_list);
+                                }
+                                trace_print "Inserting  : @{$row}\n";
                                 eval { $sth_local->execute(@{$row}) };
                                 if ($@) {
                                     warn "Can't insert @{$row}\n$DBI::errstr\n";
@@ -275,9 +275,9 @@ sub populate {
     }
 }
 
+# The different type of entities to handle
+our @targets = qw(organizations people);
 for my $target (@targets) {
-    #populate "organizations";
-    #populate "people";
     populate $target;
 }
 

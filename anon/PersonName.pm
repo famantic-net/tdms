@@ -62,7 +62,7 @@ sub anonymizeGivenName {
             @given_names = split "\n", $given_names;
         }
         my $grand = int(rand($#given_names+1));
-        $anonymized{$real_name} = uc("$given_names[$grand] TESTPERSON");
+        $anonymized{$real_name} = uc("$given_names[$grand] ACME");
     }
     return sprintf "%- ${name_field_len}s", $anonymized{$real_name};
 }

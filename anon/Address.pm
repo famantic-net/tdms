@@ -1,4 +1,5 @@
-package Address;
+package Address; # Abstract
+# This class is only used through its subclasses BusinessAddress and PrivateAddress
 
 use strict;
 use anon::LegalEntity;
@@ -14,12 +15,11 @@ our $zip_pos = 0;
 our $municipality_pos = 6;
 our ($dbh, $address_id);
 
-sub new() {
+
+sub init() {
     my $class = shift;
     $dbh = shift;
     $address_id = shift;
-    my $self = AnonymizedFields->address;
-    return bless $self;
 }
 
 
@@ -30,6 +30,9 @@ sub anonymizeStreet {
     unless ($anonymized{$address_id}) {
         $anonymized{$address_id} = $self->__get_address;
     }
+    #else {
+    #    print "::Already have address for $address_id: @{$anonymized{$address_id}}\n";
+    #}
     return sprintf "%- ${street_field_len}s", $anonymized{$address_id}[0];
 }
 

@@ -6,10 +6,13 @@ use anon::AnonymizedFields;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
+our @test_list;
 
 sub new() {
     my $class = shift;
     my $self = AnonymizedFields->pnum;
+    my $test_list= shift;
+    @test_list = @{$test_list};
     return bless $self;
 }
 
@@ -18,8 +21,7 @@ sub new() {
 sub anonymizePersonNumber {
     my $self = shift;
     my $pnum = shift;
-    my $test_list= shift;
-    return $pnum unless $pnum; # If empty return what came in
+    return $pnum if $pnum =~ m/^\s*$/; # If empty return what came in
     #print "Received: $pnum\n";
     unless ($anonymized{$pnum}) { # Already anonymized
         my $lead_dig;
@@ -34,7 +36,8 @@ sub anonymizePersonNumber {
             ($lead_dig) = $pnum =~ m/^(\d\d\d\d)/;
         }
         else {
-            die "Problem with person number format: $pnum";
+            #die "Problem with person number format: $pnum";
+            return $pnum; # Return what came in since it's not a normal Swedish person number
         }
         my $anon_number;
         # Avoid creating a person number that clashes with the predefined testobjects
@@ -43,7 +46,7 @@ sub anonymizePersonNumber {
             my $day = sprintf "%02d", int(rand(27)) + 1;
             my $ordinal = sprintf "%03d", int(rand(1000));
             $anon_number = $lead_dig . $month . $day . $ordinal . $self->_control_digit($lead_dig, $month, $day, $ordinal);
-        } while (grep /$anon_number/, @{$test_list});
+        } while (grep /$anon_number/, @test_list);
         $anonymized{$pnum} = $anon_number;
     }
     return $anonymized{$pnum};

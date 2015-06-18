@@ -21,7 +21,8 @@ sub new() {
     return bless $self;
 }
 
-sub anonymizeCompanyName {
+
+sub anonymizeBusinessName {
     my $self = shift;
     my $real_name = shift;
     return $real_name if $real_name =~ m/^\s*$/; # If empty return what came in
@@ -36,19 +37,43 @@ sub anonymizeCompanyName {
             do {
                 $item_part = $item[int(rand($#item+1))];
             } while ($item_part =~ m/\bAB\b/);
-            #print "Using: $item_part\n";
             $anon_name .= $item_part . " ";
         }
         $anon_name =~ s/\s*$//; # Remove any trailing space
         $anon_name .= " AB" if $real_name =~ m/\bAB\b/;
-        $anonymized{$name_id} = sprintf "%- ${name_field_len}s", $anon_name;
-        $anonymized{$name_id} = substr($anonymized{$name_id}, 0, $name_field_len); # In case the new name is too long
+        $anonymized{$name_id}{full} = $anon_name;
     }
-    return $anonymized{$name_id};
+    return substr(sprintf("%- ${name_field_len}s", $anonymized{$name_id}{full}), 0, $name_field_len); # In case the new name is too long
 }
 
+
+sub anonymizeBusinessAbbr {
+    my $self = shift;
+    my $real_name = shift;
+    #return $real_name if $real_name =~ m/^\s*$/; # If empty return what came in
+    #print "Name: $real_name\n";
+    my $name_field_len = length($real_name);
+    unless ($anonymized{$name_id}{full}) { # If there is no business name, create one
+        $anonymized{$name_id}{full} = $self->anonymizeBusinessName($real_name);
+    }
+    my $name = $anonymized{$name_id}{full};
+    $name =~ s/\s+//g; # Remove all spaces
+    $name = uc $name;
+    #my @name = split '', $name;
+    #print ": @name\n";
+    #my $pos;
+    #while ($pos < ($name_field_len - 4)) {
+    #    $pos += int(rand(3)+1);
+    #    $abbr .= $name[$pos];
+    #}
+    #print "Abbr: $abbr\n";
+    $anonymized{$name_id}{abbr} = substr("ACME" . int(rand(10)) . $name, 0, $name_field_len);
+    return sprintf("%- ${name_field_len}s", $anonymized{$name_id}{abbr});
+}
+
+
 sub __get_names {
-        if ($#name_rows < 1) {
+        if ($#name_rows < 0) {
             my $statement = "SELECT $name_field FROM $name_table order by random() limit $limit";
             my $sth = $dbh->prepare( $statement );
             $sth->execute;
