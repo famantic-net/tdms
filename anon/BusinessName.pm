@@ -1,4 +1,4 @@
-package OrgName;
+package BusinessName;
 
 use strict;
 use anon::LegalEntity;
@@ -40,7 +40,12 @@ sub anonymizeBusinessName {
             $anon_name .= $item_part . " ";
         }
         $anon_name =~ s/\s*$//; # Remove any trailing space
-        $anon_name .= " AB" if $real_name =~ m/\bAB\b/;
+        if ($real_name =~ m/\bAB\b/) {
+            $anon_name .= " AB";
+        }
+        elsif ($real_name =~ m/\bHB\b/) {
+            $anon_name .= " HB";
+        }
         $anonymized{$name_id}{full} = $anon_name;
     }
     return substr(sprintf("%- ${name_field_len}s", $anonymized{$name_id}{full}), 0, $name_field_len); # In case the new name is too long

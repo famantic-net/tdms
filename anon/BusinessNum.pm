@@ -1,4 +1,4 @@
-package OrgNum;
+package BusinessNum;
 
 use strict;
 use anon::LegalEntity;

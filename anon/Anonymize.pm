@@ -1,8 +1,8 @@
 package Anonymize;
 
 use strict;
-use anon::OrgNum;
-use anon::OrgName;
+use anon::BusinessNum;
+use anon::BusinessName;
 use anon::PersonNum;
 use anon::PersonName;
 use anon::BusinessAddress;
@@ -29,14 +29,14 @@ sub enact { #
     my $id; # Used to keep table fileds consistent
     #SWITCH: for ($target) {
     #    /organizations/ && do {
-            my $orgnum = new OrgNum($test_list);
+            my $orgnum = new BusinessNum($test_list);
             if (grep /$table/, $orgnum->list_attr) {
                 for my $field (@{$orgnum->fields($table)}) {
                     $id = ${$row}[&{$field_num}($field)];
                     ${$row}[&{$field_num}($field)] = $orgnum->anonymizeOrgNumber(${$row}[&{$field_num}($field)]);
                 }
             }
-            my $orgname = new OrgName($dbh_rdb, $id);
+            my $orgname = new BusinessName($dbh_rdb, $id);
             if (grep /$table/, $orgname->list_attr("full")) {
                 for my $field (@{$orgname->fields('full', $table)}) {
                     ${$row}[&{$field_num}($field)] = $orgname->anonymizeBusinessName(${$row}[&{$field_num}($field)]);
