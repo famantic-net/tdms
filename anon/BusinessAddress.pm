@@ -1,6 +1,7 @@
 package BusinessAddress;
 
 use strict;
+
 use anon::AnonymizedFields;
 use anon::Address;
 

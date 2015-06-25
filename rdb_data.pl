@@ -78,31 +78,35 @@ F<rdb2testdb.conf>
 
 use DBI;
 use Getopt::Std;
+#use feature 'unicode_strings';
+use utf8;
 
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
 #getopts("E:cdelx:", \%opts);
 #$envpass = $opts{E} if $opts{E};
 #$commit = 1 if $opts{c};
-getopts("cdlmprtv", \%opts);
+getopts("cdelmrstvx", \%opts);
+$count = 1 if $opts{c};
+$examples = 1 if $opts{x};
+$export = 1 if $opts{e};
 $localdb = 1 if $opts{l};
 $metadata = 1 if $opts{m};
-$count = 1 if $opts{c};
-$populated = 1 if $opts{p};
 $roll_dates = 1 if $opts{r};
+$show = 1 if $opts{s};
 $timestamps = 1 if $opts{t};
 $truncate = 1 if $opts{d};
 $verbose = 1 if $opts{v};
 
 if ($#{[ keys %opts ]} < 0) {
     print "Need some argument!\n";
-    print "Usage: $0 -[cdlmrtv]\n";
+    print "Usage: $0 -[cdelmrstvx]\n";
     print "Or try 'perldoc $0'\n";
     exit 1;
 }
 
 
-$localdb = 1 if $truncate or $roll_dates;
+$localdb = 1 if $truncate or $roll_dates or $export;
 
 sub error_handler {
     
@@ -134,29 +138,71 @@ sub trace_print {
     #}
 }
 
+# http://www.easysoft.com/developer/languages/c/examples/ListDataTypes.html
+#// Array of SQL Data Types
+#dataTypes dtList[DTSIZE] = {
+#    "SQL_UNKNOWN_TYPE",0,
+#    "SQL_CHAR",1,
+#    "SQL_NUMERIC",2,
+#    "SQL_DECIMAL",3,
+#    "SQL_INTEGER",4,
+#    "SQL_SMALLINT",5,
+#    "SQL_FLOAT",6,
+#    "SQL_REAL",7,
+#    "SQL_DOUBLE",8,
+#    "SQL_DATETIME",9,
+#    "SQL_DATE",9,
+#    "SQL_INTERVAL",10,
+#    "SQL_TIME",10,
+#    "SQL_TIMESTAMP",11,
+#    "SQL_VARCHAR",12,
+#    "SQL_TYPE_DATE",91,
+#    "SQL_TYPE_TIME",92,
+#    "SQL_TYPE_TIMESTAMP",93,
+#    "SQL_LONGVARCHAR",-1,
+#    "SQL_BINARY",-2,
+#    "SQL_VARBINARY",-3,
+#    "SQL_LONGVARBINARY",-4,
+#    "SQL_BIGINT",-5,
+#    "SQL_TINYINT",-6,
+#    "SQL_BIT",-7,
+#    "SQL_WCHAR",-8,
+#    "SQL_WVARCHAR",-9,
+#    "SQL_WLONGVARCHAR",-10,
+#    "SQL_GUID",-11,
+#    "SQL_SS_VARIANT",-150,
+#    "SQL_SS_UDT",-151,
+#    "SQL_SS_XML",-152,
+#    "SQL_SS_TABLE",-153,
+#    "SQL_SS_TIME2",-154,
+#    "SQL_SS_TIMESTAMPOFFSET",-155
+#};
 %types = (
-    1 => "SQL_CHAR",           
-    2 => "SQL_NUMERIC",        
-    3 => "SQL_DECIMAL",        
-    4 => "SQL_INTEGER",        
-    5 => "SQL_SMALLINT",       
-    6 => "SQL_FLOAT",          
-    7 => "SQL_REAL",           
-    8 => "SQL_DOUBLE",         
-    9 => "SQL_DATE",           
-   10 => "SQL_TIME",           
-   11 => "SQL_TIMESTAMP",      
-   12 => "SQL_VARCHAR",        
-   -1 => "SQL_LONGVARCHAR",    
-   -2 => "SQL_BINARY",         
-   -3 => "SQL_VARBINARY",      
-   -4 => "SQL_LONGVARBINARY",  
-   -5 => "SQL_BIGINT",         
-   -6 => "SQL_TINYINT",        
-   -7 => "SQL_BIT",            
-   -8 => "SQL_WCHAR",          
-   -9 => "SQL_WVARCHAR",       
-  -10 => "SQL_WLONGVARCHAR",   
+    1 => "SQL_CHAR",
+    2 => "SQL_NUMERIC",
+    3 => "SQL_DECIMAL",
+    4 => "SQL_INTEGER",
+    5 => "SQL_SMALLINT",
+    6 => "SQL_FLOAT",
+    7 => "SQL_REAL",
+    8 => "SQL_DOUBLE",
+    9 => "SQL_DATE",
+   10 => "SQL_TIME",
+   11 => "SQL_TIMESTAMP",
+   12 => "SQL_VARCHAR",
+   91 => "SQL_TYPE_DATE",
+   92 => "SQL_TYPE_TIME",
+   93 => "SQL_TYPE_TIMESTAMP",
+   -1 => "SQL_LONGVARCHAR",
+   -2 => "SQL_BINARY",
+   -3 => "SQL_VARBINARY",
+   -4 => "SQL_LONGVARBINARY",
+   -5 => "SQL_BIGINT",
+   -6 => "SQL_TINYINT",
+   -7 => "SQL_BIT",
+   -8 => "SQL_WCHAR",
+   -9 => "SQL_WVARCHAR",
+  -10 => "SQL_WLONGVARCHAR",
 );
 
 
@@ -199,7 +245,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
     ### Build the full table name with quoting if required
     $table = qq{$owner."$table"} if defined $owner;
     
-    unless ($timestamps or $roll_dates or $populated) {
+    unless ($timestamps or $roll_dates or $show or $examples or $export) {
         print "\n";
         print "Table Information\n";
         print "=================\n";
@@ -274,7 +320,55 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             $sth->finish();
             last SWITCH;
         };
-        $populated && do {
+        $show && do {
+            my $dbh = $localdb ? $dbh_local : $dbh_rdb;
+            my $statement = "SELECT count(*) FROM $table";
+            my $sth = eval { $dbh->prepare( $statement ) };
+            eval { $sth->execute() };
+            last SWITCH if $@;
+            my $result_table_ref = $sth->fetchall_arrayref;
+            my $rows = ${${$result_table_ref}[0]}[0];
+            if ($rows > 0) {
+                print "\n=== $name ===\n";
+                $statement = "SELECT * FROM $table";
+                $sth = $dbh->prepare( $statement );
+                $sth->execute();
+                $result_table_ref = $sth->fetchall_arrayref;
+                for my $row (@{$result_table_ref}) {
+                    print "@{$row}\n"
+                }
+            };
+            last SWITCH;
+        };
+        $export && do {
+            my $dbh = $localdb ? $dbh_local : $dbh_rdb;
+            my $statement = "SELECT count(*) FROM $table";
+            my $sth = eval { $dbh->prepare( $statement ) };
+            eval { $sth->execute() };
+            last SWITCH if $@;
+            my $result_table_ref = $sth->fetchall_arrayref;
+            my $rows = ${${$result_table_ref}[0]}[0];
+            if ($rows > 0) {
+                $statement = "SELECT * FROM $table";
+                $sth = $dbh->prepare( $statement );
+                $sth->execute();
+                $result_table_ref = $sth->fetchall_arrayref;
+                unless ( -e $export_dir ) {
+                    mkdir $export_dir
+                }
+                if (open my $fh, ">", "$export_dir/${name}.txt") {
+                    for my $row (@{$result_table_ref}) {
+                        print $fh "@{$row}\n"
+                    }
+                    close $fh;
+                }
+                else {
+                   warn "Can't open ${name}.txt: $!\n"; 
+                }
+            };
+            last SWITCH;
+        };
+        $examples && do {
             my $dbh = $localdb ? $dbh_local : $dbh_rdb;
             my $statement = "SELECT count(*) FROM $table";
             my $sth = eval { $dbh->prepare( $statement ) };
@@ -294,11 +388,6 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $roll_dates && do {
-            %tables_to_roll = ( actx_ftax =>  [ "ar_sek_tax_from", "tr_datum" ],
-                                actx_tax01 => [ "inkar" ],
-                                actx_tax02 => [ "inkar" ],
-                                acib_acitboa => [ "boa_slut_per", "boa_trans_dat" ],
-                              );
             # trace_print "Now on $name: matched:  @{[ grep /$name/, keys %tables_to_roll ]}\n";
             if (grep /$name/, keys %tables_to_roll) {
                 # Primary keys
@@ -355,12 +444,12 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                     my @put_row;
                     #for my $row (@{$result_table_ref}) {
                     for my $row (@sorted_result_table) {
-                        trace_print "Update: $rolled_year[$line] @{$row}\n";
+                        trace_print "Rolling to: $rolled_year[$line] '@{$row}'\n";
                         @put_row = "$rolled_year[$line] ";
                         for (my $i=1; $i<=$#{$row}; $i++) {
                             push @put_row, ${$row}[$i];
                         }
-                        trace_print "Inserting @{[ join ' ', @put_row ]}\n";
+                        trace_print "Inserting: @{[ join ' ', @put_row ]}\n";
                         $sth->execute(@put_row);
                         $line++;
                     }

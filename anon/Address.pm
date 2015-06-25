@@ -2,6 +2,9 @@ package Address; # Abstract
 # This class is only used through its subclasses BusinessAddress and PrivateAddress
 
 use strict;
+#use feature 'unicode_strings';
+use utf8;
+
 use anon::LegalEntity;
 use anon::AnonymizedFields;
 
@@ -33,7 +36,7 @@ sub anonymizeStreet {
     #else {
     #    print "::Already have address for $address_id: @{$anonymized{$address_id}}\n";
     #}
-    return sprintf "%- ${street_field_len}s", $anonymized{$address_id}[0];
+    return substr(sprintf("%- ${street_field_len}s", $anonymized{$address_id}[0]), 0, $street_field_len); # In case the new name is too long
 }
 
 sub anonymizeMunicipality {

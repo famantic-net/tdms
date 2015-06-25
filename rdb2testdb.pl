@@ -9,13 +9,21 @@ Will fetch records for companies and individuals each and their corresponding da
 in other tables. Number of records and keys that are used are specified in the
 file F<rdb2testdb.conf>.
 
+All data can be anonymized with the -a switch. 
+
 =head1 Options
 
 =over
 
+=item -a
+
+Anonymizes all data before it is stored to the local database. This means that business numbers and person
+numbers will be altered to partly random figures. For businesses the first digit, indicating
+type of business, is preserved. For persons the year is preserved.
+
 =item -s
 
-Fetches the test data for businesses and persons that have been specified in F<rdb2testdb.conf>.
+Fetches the specific test data for businesses and persons that have been specified in F<rdb2testdb.conf>.
 
 =item -v
 
@@ -25,18 +33,42 @@ Generates trace output showing processed tables and inserts.
 
 =head1 Files
 
-F<rdb2testdb.conf>
+=over
+
+=item rdb2testdb.conf
+
+Contains configuration data such as IP-address to RDB and user/pw, table/field realtions etc.
+
+=item Anonymization
+
+Classes used for creating anonymized fields.
+
+ anon/Address.pm
+ anon/AnonymizedFields.pm
+ anon/Anonymize.pm
+ anon/BusinessAddress.pm
+ anon/BusinessName.pm
+ anon/BusinessNum.pm
+ anon/LegalEntity.pm
+ anon/PersonName.pm
+ anon/PersonNum.pm
+ anon/PrivateAddress.pm
+ 
+=back
 
 =head1 Examples
 
-Nothing yet. :(
+C<./rdb2testdb.pl -av | tee testdb_populate.log>
+
+Anonymizes and turns on verbose output showing what is being inserted into the local database.
 
 =cut
 
 use DBI;
 use Getopt::Std;
+#use feature 'unicode_strings';
+use utf8;
 
-use lib "$ENV{HOME}/jobs/rdb/rdb_data";
 use anon::Anonymize;
 
 # Mapping of table to relevant column

@@ -1,6 +1,7 @@
 package PrivateAddress;
 
 use strict;
+
 use anon::AnonymizedFields;
 use anon::Address;
 
