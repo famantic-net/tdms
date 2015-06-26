@@ -29,7 +29,7 @@ sub enact { #
             return $i if $sth->{NAME}->[$i] eq $field; 
         }
     };
-    my $id; # Used to keep table fileds consistent
+    my $id; # Used to keep table fields consistent
     #SWITCH: for ($target) {
     #    /organizations/ && do {
             my $orgnum = new BusinessNum($test_list);

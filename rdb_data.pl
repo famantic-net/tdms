@@ -81,6 +81,8 @@ use Getopt::Std;
 #use feature 'unicode_strings';
 use utf8;
 
+use exporter::Exporter;
+
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
 #getopts("E:cdelx:", \%opts);
@@ -341,6 +343,14 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $export && do {
+            last SWITCH unless $name eq "acra_rapp";
+            #my $object = new Exporter($name);
+            #for my $key (keys %{$object}) {
+            #    print "$key\n";
+            #    print "@{${$object}{$key}}\n";
+            #    print "@{$object->$key}\n";
+            #}
+            #exit;
             my $dbh = $localdb ? $dbh_local : $dbh_rdb;
             my $statement = "SELECT count(*) FROM $table";
             my $sth = eval { $dbh->prepare( $statement ) };
@@ -349,6 +359,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             my $result_table_ref = $sth->fetchall_arrayref;
             my $rows = ${${$result_table_ref}[0]}[0];
             if ($rows > 0) {
+                my $exporter = new Exporter($name);
                 $statement = "SELECT * FROM $table";
                 $sth = $dbh->prepare( $statement );
                 $sth->execute();
@@ -356,14 +367,16 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                 unless ( -e $export_dir ) {
                     mkdir $export_dir
                 }
-                if (open my $fh, ">", "$export_dir/${name}.txt") {
+                my $filename = $exporter->filename;
+                if (open my $fh, ">", "$export_dir/$filename") {
                     for my $row (@{$result_table_ref}) {
-                        print $fh "@{$row}\n"
+                        #print $fh "@{$row}\n"
+                        print $fh $exporter->row_string($row, $sth, \%types), "\n";
                     }
                     close $fh;
                 }
                 else {
-                   warn "Can't open ${name}.txt: $!\n"; 
+                   warn "Can't open $filename: $!\n"; 
                 }
             };
             last SWITCH;
