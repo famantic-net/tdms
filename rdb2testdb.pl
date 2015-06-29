@@ -43,16 +43,16 @@ Contains configuration data such as IP-address to RDB and user/pw, table/field r
 
 Classes used for creating anonymized fields.
 
- anon/Address.pm
- anon/AnonymizedFields.pm
- anon/Anonymize.pm
- anon/BusinessAddress.pm
- anon/BusinessName.pm
- anon/BusinessNum.pm
- anon/LegalEntity.pm
- anon/PersonName.pm
- anon/PersonNum.pm
- anon/PrivateAddress.pm
+ anon::Address.pm
+ anon::AnonymizedFields.pm
+ anon::Anonymize.pm
+ anon::BusinessAddress.pm
+ anon::BusinessName.pm
+ anon::BusinessNum.pm
+ anon::LegalEntity.pm
+ anon::PersonName.pm
+ anon::PersonNum.pm
+ anon::PrivateAddress.pm
  
 =back
 

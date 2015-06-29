@@ -4,7 +4,7 @@
 
 =head1 Synopsis
 
-rdb_data.pl -[cdlmrtv]
+rdb_data.pl -[cdelmrtv]
 
 =head1 Purpose
 
@@ -21,6 +21,11 @@ Counts the number of row in each table
 =item -d
 
 Truncates, ie deletes all rows, in all tables. Implies C<-l>.
+
+=item -e
+
+Exports all tables to text format according to layout information defined in
+classes under F<.../export/layout>.
 
 =item -l
 
@@ -42,6 +47,63 @@ Display fileds that are defined as C<SQL_TIMESTAMP> from all tables.
 
 Turn on verbose prints to STDOUT about what's happening.
 
+=back
+
+=head1 Files
+
+=over
+
+=item rdb2testdb.conf
+
+Contains configuration data such as IP-address to RDB and user/pw, table/field realtions etc.
+
+=item Mainframe export
+
+Classes used for creating export files per table.
+
+ export::Exporter.pm
+ export::Testdata.pm
+ export::layout::acba_rathist.pm.pm
+ export::layout::acba_ratindik.pm.pm
+ export::layout::acba_rating.pm
+ export::layout::acba_scoring2.pm
+ export::layout::acdt_dttph.pm
+ export::layout::acdt_dttpv.pm
+ export::layout::acgd_empfun01.pm
+ export::layout::acgd_organi01.pm
+ export::layout::acib_acitaga.pm
+ export::layout::acib_acitarn.pm
+ export::layout::acib_acitbif.pm
+ export::layout::acib_acitbiv.pm
+ export::layout::acib_acitboa.pm
+ export::layout::acib_acitefi.pm
+ export::layout::acib_acitft2.pm
+ export::layout::acib_acitft3.pm
+ export::layout::acib_acitftg.pm
+ export::layout::acib_acitgaf.pm
+ export::layout::acib_acitkcn.pm
+ export::layout::acib_acitmin.pm
+ export::layout::acib_acitnoe.pm
+ export::layout::acib_acitnon.pm
+ export::layout::acib_acitntf.pm
+ export::layout::acib_acitoms.pm
+ export::layout::acib_acitver.pm
+ export::layout::acin_intr10.pm
+ export::layout::acin_intr20.pm
+ export::layout::acin_intr30.pm
+ export::layout::acin_intr40.pm
+ export::layout::acpr_prtpr.pm
+ export::layout::acpr_prtprh.pm
+ export::layout::acra_klient.pm
+ export::layout::acra_rapp.pm
+ export::layout::acra_ratssa.pm
+ export::layout::acra_ratssah.pm
+ export::layout::acra_uphi.pm
+ export::layout::actx_ftax.pm
+ export::layout::actx_tax01.pm
+ export::layout::actx_tax02.pm
+ export::layout::nyckeltal.pm
+ 
 =back
 
 =head1 Examples
@@ -70,10 +132,6 @@ Truncate all local tables.
 
 =back
 
-=head1 Files
-
-F<rdb2testdb.conf>
-
 =cut
 
 use DBI;
@@ -84,9 +142,6 @@ use export::Exporter;
 
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
-#getopts("E:cdelx:", \%opts);
-#$envpass = $opts{E} if $opts{E};
-#$commit = 1 if $opts{c};
 getopts("cdelmrstvx", \%opts);
 $count = 1 if $opts{c};
 $examples = 1 if $opts{x};
