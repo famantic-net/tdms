@@ -1,7 +1,9 @@
 package Exporter;
+# Delegates to one of the Testdata subclasses in exporter::layout::
 
 use strict;
-use exporter::layout::acra_rapp;
+use feature 'unicode_strings';
+use export::layout::acra_rapp;
 
 #our %table_map = (
 #    acra_rapp => "AcraRapp",

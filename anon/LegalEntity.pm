@@ -1,8 +1,7 @@
 package LegalEntity;
 
 use strict;
-#use feature 'unicode_strings';
-use utf8;
+use feature 'unicode_strings';
 
 sub new() {
     my $class = shift;

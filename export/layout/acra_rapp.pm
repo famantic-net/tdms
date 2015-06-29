@@ -1,6 +1,13 @@
 package acra_rapp;
 
 use strict;
+#use feature 'unicode_strings';
+use Unicode::GCString;
+use export::Testdata;
+
+our @ISA = qw(Testdata);
+
+our $filename = "E719.TESTDATA.ACRA.RAPP";
 
 # Indicates field length and if sign should be applied
 our %acra_rapp = (
@@ -30,11 +37,15 @@ our %acra_rapp = (
     bevkod     => [ 1,  0 ], 
 );
 
-our $filename = "E719.TESTDATA.ACRA.RAPP";
-
 sub new() {
     my $self = shift->_classobj();
     return bless $self;
+}
+
+
+sub filename {
+    my $self = shift;
+    return $filename;
 }
 
 
@@ -59,37 +70,6 @@ for my $datum (keys %{ _classobj() } ) {
     }
 }
 
-sub filename {
-    my $self = shift;
-    return $filename;
-}
 
-sub row_string {
-    my $self = shift;
-    my ($table_row, $sth, $types) = @_;
-    my $result_row;
-    my $idx;
-    for my $field (@{$sth->{NAME}}) { # The array of field names
-        my $len = $self->$field->[0];
-        my $sign = $self->$field->[1];
-        my $type = $sth->{TYPE}->[$idx];
-        my $field_value = ${$table_row}[$idx];
-        unless ($types->{$type} eq "SQL_DECIMAL") {
-            $result_row .= sprintf "%- ${len}s", $field_value;
-            #printf "%- ${len}s", $field_value;
-        }
-        else {
-            $result_row .= sprintf "%0${len}d", $field_value;
-            #printf "%0${len}d", $field_value;
-            if ($sign) {
-                $result_row .= sprintf "%s", $field_value < 0 ? "-" : "+";
-                #print $field_value < 0 ? "-" : "+";
-            }
-            
-        }
-        $idx++;
-    }
-    return $result_row;
-}
 
 1;

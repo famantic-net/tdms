@@ -1,8 +1,7 @@
 package BusinessName;
 
 use strict;
-#use feature 'unicode_strings';
-use utf8;
+use feature 'unicode_strings';
 
 use anon::LegalEntity;
 use anon::AnonymizedFields;

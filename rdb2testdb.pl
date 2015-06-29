@@ -66,8 +66,7 @@ Anonymizes and turns on verbose output showing what is being inserted into the l
 
 use DBI;
 use Getopt::Std;
-#use feature 'unicode_strings';
-use utf8;
+use feature 'unicode_strings';
 
 use anon::Anonymize;
 
@@ -123,6 +122,7 @@ our $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
                           "$local_dbpwd",
                           {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                     );
+$dbh_local->{pg_enable_utf8} = 1;
 
 our $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
                         host='$remote_host';
@@ -131,6 +131,7 @@ our $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
                         "$remote_dbpwd",
                         {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                     );
+$dbh_rdb->{pg_enable_utf8} = 1;
 
 
 #@res = map {keys ${$_}[0]} @int_relations;

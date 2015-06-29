@@ -1,8 +1,7 @@
 package Anonymize;
 
 use strict;
-#use feature 'unicode_strings';
-use utf8;
+use feature 'unicode_strings';
 
 use anon::BusinessNum;
 use anon::BusinessName;

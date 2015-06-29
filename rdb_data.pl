@@ -78,10 +78,9 @@ F<rdb2testdb.conf>
 
 use DBI;
 use Getopt::Std;
-#use feature 'unicode_strings';
-use utf8;
+use feature 'unicode_strings';
 
-use exporter::Exporter;
+use export::Exporter;
 
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
@@ -216,6 +215,8 @@ $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
                           "$local_dbpwd",
                           {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                     );
+$dbh_local->{pg_enable_utf8} = 1;
+
 unless ($localdb) {
     $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
                         host='$remote_host';
@@ -224,6 +225,7 @@ unless ($localdb) {
                         "$remote_dbpwd",
                         {AutoCommit=>1,RaiseError=>1,PrintError=>0}
                     );
+    $dbh_rdb->{pg_enable_utf8} = 1;
 }
 
 

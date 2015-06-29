@@ -1,0 +1,37 @@
+package Testdata; # Abstract
+# Super class for the export layout classes
+
+use strict;
+use feature 'unicode_strings';
+
+sub row_string {
+    my $self = shift;
+    my ($table_row, $sth, $types) = @_;
+    my $result_row;
+    my $idx;
+    for my $field (@{$sth->{NAME}}) { # The array of field names in the $sth result set
+        my $len = $self->$field->[0];
+        my $sign = $self->$field->[1];
+        my $type = $sth->{TYPE}->[$idx];
+        my $field_value = ${$table_row}[$idx];
+        unless ($types->{$type} eq "SQL_DECIMAL") {
+            $result_row .= sprintf "%- ${len}s", $field_value;
+            #printf "%- ${len}s", $field_value;
+        }
+        else {
+            $result_row .= sprintf "%0${len}d", $field_value;
+            #printf "%0${len}d", $field_value;
+            if ($sign) {
+                $result_row .= sprintf "%s", $field_value < 0 ? "-" : "+";
+                #print $field_value < 0 ? "-" : "+";
+            }
+            
+        }
+        $idx++;
+    }
+    return $result_row;
+}
+
+
+
+1;
