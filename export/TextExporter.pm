@@ -1,4 +1,4 @@
-package Exporter;
+package TextExporter;
 # Delegates to one of the Testdata subclasses in exporter::layout::
 
 use strict;
@@ -10,15 +10,15 @@ use export::layout::acra_rapp;
 #);
 
 # Takes the table name as argument and delegates to the corresponding layout class
+# The layout classes have the same names as their corresponding tables
 sub new() {
     my $class = shift;
-    my $table = shift;
-    #print $table;
+    my $table_name = shift;
     no strict 'refs';
     #my $self = new AcraRapp;
     #my $self = $table_map{$table}->new;
     no strict 'refs';
-    my $self = $table->new;
+    my $self = $table_name->new;
     use strict 'refs';
     return $self;
 }

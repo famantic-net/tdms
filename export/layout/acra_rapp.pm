@@ -1,8 +1,7 @@
 package acra_rapp;
 
 use strict;
-#use feature 'unicode_strings';
-use Unicode::GCString;
+use feature 'unicode_strings';
 use export::Testdata;
 
 our @ISA = qw(Testdata);

@@ -33,5 +33,15 @@ sub row_string {
 }
 
 
+sub row_len {
+    my $self = shift;
+    my $len;
+    for my $key (keys %{$self}) {
+        $len += $self->{$key}->[0] + $self->{$key}->[1];
+    }
+    return $len;
+}
+
+
 
 1;

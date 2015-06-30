@@ -63,8 +63,8 @@ Classes used for creating export files per table.
 
  export::Exporter.pm
  export::Testdata.pm
- export::layout::acba_rathist.pm.pm
- export::layout::acba_ratindik.pm.pm
+ export::layout::acba_rathist.pm
+ export::layout::acba_ratindik.pm
  export::layout::acba_rating.pm
  export::layout::acba_scoring2.pm
  export::layout::acdt_dttph.pm
@@ -136,9 +136,10 @@ Truncate all local tables.
 
 use DBI;
 use Getopt::Std;
+use Net::FTP;
 use feature 'unicode_strings';
 
-use export::Exporter;
+use export::TextExporter;
 
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
@@ -416,7 +417,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             my $result_table_ref = $sth->fetchall_arrayref;
             my $rows = ${${$result_table_ref}[0]}[0];
             if ($rows > 0) {
-                my $exporter = new Exporter($name);
+                my $exporter = new TextExporter($name);
                 $statement = "SELECT * FROM $table";
                 $sth = $dbh->prepare( $statement );
                 $sth->execute();
@@ -430,6 +431,16 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                         #print $fh "@{$row}\n"
                         print $fh $exporter->row_string($row, $sth, \%types), "\n";
                     }
+                    my $lrecl = $exporter->row_len;
+                    my $ftp = new Net::FTP($mainframe_ip, Debug => 0) or die "Can't connect to $mainframe_ip: $@";
+                    $ftp->login($mainframe_uid, $mainframe_pwd) or die "Can't login to $mainframe_ip:", $ftp->message;
+                    $ftp->cwd("..");
+                    $ftp->quot("site LRECL=$lrecl");
+                    $ftp->ascii;
+                    # Using the filehandle doesn't seem to work
+                    $ftp->delete($filename) or warn "Couldn't remove $filename from mainframe: ", $ftp->message;
+                    $ftp->put("$export_dir/$filename", $filename) or die "FTP put failed ", $ftp->message;
+                    $ftp->quit;
                     close $fh;
                 }
                 else {
