@@ -27,6 +27,10 @@ Truncates, ie deletes all rows, in all tables. Implies C<-l>.
 Exports all tables to text format according to layout information defined in
 classes under F<.../export/layout>.
 
+=item -f
+
+FTP exported files to mainframe.
+
 =item -l
 
 Perform the action locally, ie on the machine where the script runs.
@@ -39,13 +43,21 @@ Display metadata for all tables.
 
 Roll dates, i.e update certain timestamps.
 
+=item -s
+
+Shows the contents of all tables that are non-empty.
+
 =item -t
 
-Display fileds that are defined as C<SQL_TIMESTAMP> from all tables.
+Display fields that are defined as C<SQL_TIMESTAMP> from all tables.
 
 =item -v
 
 Turn on verbose prints to STDOUT about what's happening.
+
+=item -x
+
+Shows random example data for each field in all non-empty tables.
 
 =back
 
@@ -132,6 +144,14 @@ Truncate all local tables.
 
 =back
 
+C<rdb_data.pl -ef>
+
+=over 4
+
+Export all tables to text format and ftp to mainframe.
+
+=back
+
 =cut
 
 use DBI;
@@ -143,7 +163,7 @@ use export::TextExporter;
 
 require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
 
-getopts("cdelmrstvx", \%opts);
+getopts("cdeflmrstvx", \%opts);
 $count = 1 if $opts{c};
 $examples = 1 if $opts{x};
 $export = 1 if $opts{e};
@@ -152,6 +172,7 @@ $metadata = 1 if $opts{m};
 $roll_dates = 1 if $opts{r};
 $show = 1 if $opts{s};
 $timestamps = 1 if $opts{t};
+$transfer = 1 if $opts{f};
 $truncate = 1 if $opts{d};
 $verbose = 1 if $opts{v};
 
@@ -401,7 +422,8 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $export && do {
-            last SWITCH unless $name eq "acra_rapp";
+            my @tables = qw( acra_rapp acba_rathist );
+            last SWITCH unless grep /$name/, @tables ;
             #my $object = new Exporter($name);
             #for my $key (keys %{$object}) {
             #    print "$key\n";
@@ -431,16 +453,19 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                         #print $fh "@{$row}\n"
                         print $fh $exporter->row_string($row, $sth, \%types), "\n";
                     }
-                    my $lrecl = $exporter->row_len;
-                    my $ftp = new Net::FTP($mainframe_ip, Debug => 0) or die "Can't connect to $mainframe_ip: $@";
-                    $ftp->login($mainframe_uid, $mainframe_pwd) or die "Can't login to $mainframe_ip:", $ftp->message;
-                    $ftp->cwd("..");
-                    $ftp->quot("site LRECL=$lrecl");
-                    $ftp->ascii;
-                    # Using the filehandle doesn't seem to work
-                    $ftp->delete($filename) or warn "Couldn't remove $filename from mainframe: ", $ftp->message;
-                    $ftp->put("$export_dir/$filename", $filename) or die "FTP put failed ", $ftp->message;
-                    $ftp->quit;
+                    if ($transfer) {
+                        my $lrecl = $exporter->row_len;
+                        my $ftp = new Net::FTP($mainframe_ip, Debug => 0) or die "Can't connect to $mainframe_ip: $@";
+                        $ftp->login($mainframe_uid, $mainframe_pwd) or die "Can't login to $mainframe_ip:", $ftp->message;
+                        $ftp->cwd("..");
+                        $ftp->quot("site LRECL=$lrecl");
+                        $ftp->ascii;
+                        # Using the filehandle doesn't seem to work
+                        $ftp->delete($filename) or warn "Couldn't remove $filename from mainframe: ", $ftp->message;
+                        $ftp->put("$export_dir/$filename", $filename) or die "FTP put failed ", $ftp->message;
+                        $ftp->quit;
+                    }
+                    
                     close $fh;
                 }
                 else {

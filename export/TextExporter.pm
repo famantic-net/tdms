@@ -4,6 +4,7 @@ package TextExporter;
 use strict;
 use feature 'unicode_strings';
 use export::layout::acra_rapp;
+use export::layout::acba_rathist;
 
 #our %table_map = (
 #    acra_rapp => "AcraRapp",

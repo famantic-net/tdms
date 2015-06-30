@@ -14,6 +14,12 @@ sub row_string {
         my $sign = $self->$field->[1];
         my $type = $sth->{TYPE}->[$idx];
         my $field_value = ${$table_row}[$idx];
+        #$result_row .= "[$types->{$type}]";
+        if ($types->{$type} eq "SQL_TIMESTAMP") {
+            # DB2 uses yyyy-mm-dd-hh.mm.ss.mmmmmm
+            $field_value =~ s/\s/-/;
+            $field_value =~ s/:/./g;
+        }
         unless ($types->{$type} eq "SQL_DECIMAL") {
             $result_row .= sprintf "%- ${len}s", $field_value;
             #printf "%- ${len}s", $field_value;
