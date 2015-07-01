@@ -1,6 +1,10 @@
 #!/usr/bin/env perl
 =pod
 
+=head1 Synopsis
+
+rdb2testdb.pl -[asv]
+
 =head1 Purpose
 
 To populate the Test Data Management System with records from RDB (aka DB2REP).
