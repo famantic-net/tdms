@@ -422,7 +422,12 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $export && do {
-            my @tables = qw( acra_rapp acba_rathist );
+            my @tables = qw(    acra_rapp
+                                acba_rathist
+                                acba_ratindik
+                                acba_rating
+                                acba_scoring2
+                            );
             last SWITCH unless grep /$name/, @tables ;
             #my $object = new Exporter($name);
             #for my $key (keys %{$object}) {

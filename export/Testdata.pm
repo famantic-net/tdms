@@ -4,6 +4,7 @@ package Testdata; # Abstract
 use strict;
 use feature 'unicode_strings';
 
+
 sub row_string {
     my $self = shift;
     my ($table_row, $sth, $types) = @_;
@@ -25,10 +26,13 @@ sub row_string {
             #printf "%- ${len}s", $field_value;
         }
         else {
+            my $orig_field_value = $field_value;
+            $field_value =~ s/\.//; # Remove any decimal point
+            $field_value =~ s/^\s*[-+]//; # Remove any sign
             $result_row .= sprintf "%0${len}d", $field_value;
             #printf "%0${len}d", $field_value;
             if ($sign) {
-                $result_row .= sprintf "%s", $field_value < 0 ? "-" : "+";
+                $result_row .= sprintf "%s", $orig_field_value < 0 ? "-" : "+";
                 #print $field_value < 0 ? "-" : "+";
             }
             

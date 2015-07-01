@@ -5,6 +5,9 @@ use strict;
 use feature 'unicode_strings';
 use export::layout::acra_rapp;
 use export::layout::acba_rathist;
+use export::layout::acba_ratindik;
+use export::layout::acba_rating;
+use export::layout::acba_scoring2;
 
 #our %table_map = (
 #    acra_rapp => "AcraRapp",
