@@ -160,10 +160,12 @@ Additional files
             anon::BusinessAddress.pm
             anon::BusinessName.pm
             anon::BusinessNum.pm
+            anon::GivenNames.pm
             anon::LegalEntity.pm
             anon::PersonName.pm
             anon::PersonNum.pm
             anon::PrivateAddress.pm
+            anon::SurNames.pm
 
        Mainframe export
        ----------------
@@ -212,15 +214,3 @@ Additional files
             export::layout::actx_tax02.pm
             export::layout::nyckeltal.pm
 
-       Name files
-       ----------
-           Files with sample names used in the anonymizing process
-           UTF8 is necessary on Linux, Latin1 on Mac OSX.
-           Symlink points to the appropriate file.
-           
-            given_names.txt@
-            given_names.latin1.txt
-            given_names.utf8.txt
-            surnames.txt@
-            surnames.latin1.txt
-            surnames.utf8.txt

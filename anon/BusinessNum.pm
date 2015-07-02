@@ -39,7 +39,7 @@ sub anonymizeOrgNumber { # $orgnum
         my $anon_number;
         # Avoid creating an organization number that clashes with the predefined testobjects
         do {
-            my $ordinal = sprintf "%08d", int(rand(10000000));
+            my $ordinal = sprintf "%08d", int(rand(100000000));
             $anon_number = $lead_dig . $ordinal . $self->_control_digit($lead_dig, $ordinal);
         } while (grep /$anon_number/, @test_list);
         

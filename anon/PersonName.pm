@@ -5,10 +5,12 @@ use feature 'unicode_strings';
 
 use anon::LegalEntity;
 use anon::AnonymizedFields;
+use anon::SurNames;
+use anon::GivenNames;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
-our ($surnames, @surnames, $given_names, @given_names);
+our (@surnames, @given_names);
 
 sub new() {
     my $class = shift;
@@ -38,13 +40,7 @@ sub anonymizeSurname {
     my $name_field_len = length($real_name);
     $real_name =~ s/\s*$//; # Remove trailing space
     unless ($anonymized{$real_name}) {
-        unless ($surnames) {
-            local undef $/;
-            open my $fh, "<", "surnames.txt" or die "Can't open 'surnames.txt': $!\n";
-            $surnames = <$fh>;
-            close $fh;
-            @surnames = split "\n", $surnames;
-        }
+        @surnames = @{SurNames->new} unless $#surnames > -1;
         my $srand = int(rand($#surnames+1));
         $anonymized{$real_name} = uc($surnames[$srand]);
     }
@@ -58,12 +54,7 @@ sub anonymizeGivenName {
     my $name_field_len = length($real_name);
     $real_name =~ s/\s*$//; # Remove trailing space
     unless ($anonymized{$real_name}) {
-        unless ($given_names) {
-            open my $fh, "<", "given_names.txt" or die "Can't open 'given_names.txt': $!\n";
-            $given_names = <$fh>;
-            close $fh;
-            @given_names = split "\n", $given_names;
-        }
+        @given_names = @{GivenNames->new} unless $#given_names > -1;
         my $grand = int(rand($#given_names+1));
         $anonymized{$real_name} = uc("$given_names[$grand] ACME");
     }

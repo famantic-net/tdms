@@ -28,7 +28,7 @@ sub row_string {
         else {
             my $orig_field_value = $field_value;
             $field_value =~ s/\.//; # Remove any decimal point
-            $field_value =~ s/^\s*[-+]//; # Remove any sign
+            $field_value =~ s/^\s*[-+]//; # Remove any leading sign
             $result_row .= sprintf "%0${len}d", $field_value;
             #printf "%0${len}d", $field_value;
             if ($sign) {

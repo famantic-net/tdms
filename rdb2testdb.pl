@@ -53,10 +53,12 @@ Classes used for creating anonymized fields.
  anon::BusinessAddress.pm
  anon::BusinessName.pm
  anon::BusinessNum.pm
+ anon::GivenNames.pm
  anon::LegalEntity.pm
  anon::PersonName.pm
  anon::PersonNum.pm
  anon::PrivateAddress.pm
+ anon::SurNames.pm
  
 =back
 
