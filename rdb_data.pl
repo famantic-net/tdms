@@ -16,15 +16,15 @@ Helper functions for Test Data Management System work.
 
 =item -c
 
-Counts the number of row in each table
+Count the number of row in each table
 
 =item -d
 
-Truncates, ie deletes all rows, in all tables. Implies C<-l>.
+Truncate, ie delete all rows, in all tables. Implies C<-l>.
 
 =item -e
 
-Exports all tables to text format according to layout information defined in
+Export all tables to text format according to layout information defined in
 classes under F<.../export/layout>.
 
 =item -f
@@ -45,7 +45,7 @@ Roll dates, i.e update certain timestamps.
 
 =item -s
 
-Shows the contents of all tables that are non-empty.
+Show the contents of all tables that are non-empty.
 
 =item -t
 
@@ -57,7 +57,7 @@ Turn on verbose prints to STDOUT about what's happening.
 
 =item -x
 
-Shows random example data for each field in all non-empty tables.
+Show random example data for each field in all non-empty tables.
 
 =back
 
@@ -427,6 +427,24 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                                 acba_ratindik
                                 acba_rating
                                 acba_scoring2
+                                acib_acitbiv
+                                acib_acitbif
+                                acib_acitarn
+                                acib_acitaga
+                                acgd_organi01
+                                acgd_empfun01
+                                acdt_dttpv
+                                acdt_dttph
+                                acib_acitftg
+                                acib_acitft3
+                                acib_acitefi
+                                acib_acitver
+                                acib_acitntf
+                                acib_acitnon
+                                acib_acitnoe
+                                acib_acitmin
+                                acib_acitkcn
+                                acib_acitgaf
                             );
             last SWITCH unless grep /$name/, @tables ;
             #my $object = new Exporter($name);

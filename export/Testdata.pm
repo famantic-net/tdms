@@ -21,7 +21,7 @@ sub row_string {
             $field_value =~ s/\s/-/;
             $field_value =~ s/:/./g;
         }
-        unless ($types->{$type} eq "SQL_DECIMAL") {
+        unless (grep /$types->{$type}/, qw( SQL_DECIMAL SQL_SMALLINT )) {
             $result_row .= sprintf "%- ${len}s", $field_value;
             #printf "%- ${len}s", $field_value;
         }

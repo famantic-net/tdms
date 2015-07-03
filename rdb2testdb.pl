@@ -21,17 +21,17 @@ All data can be anonymized with the -a switch.
 
 =item -a
 
-Anonymizes all data before it is stored to the local database. This means that business numbers and person
+Anonymize all data before it is stored to the local database. This means that business numbers and person
 numbers will be altered to partly random figures. For businesses the first digit, indicating
 type of business, is preserved. For persons the year is preserved.
 
 =item -s
 
-Fetches the specific test data for businesses and persons that have been specified in F<rdb2testdb.conf>.
+Fetch the specific test data for businesses and persons that have been specified in F<rdb2testdb.conf>.
 
 =item -v
 
-Generates trace output showing processed tables and inserts.
+Generate trace output showing processed tables and inserts.
 
 =back
 
