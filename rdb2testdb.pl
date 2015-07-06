@@ -154,9 +154,16 @@ $dbh_rdb->{pg_enable_utf8} = 1;
 #exit;
 
 
+sub populate;
+our (%business_contacts, @business_contacts);
+
+# The different type of entities to handle
+populate "organizations";
+populate "people";
+
 sub populate {
     my @entry_tuple;
-    my @test_list;
+    my @spec_list;
     my %name_hash;
     my $target = shift;
     trace_print "=== Processing $target ===\n";
@@ -164,11 +171,20 @@ sub populate {
         /organizations/ && do {
             @entry_tuple = @company_entry;
             %name_hash = %orgnum_name;
+            @spec_list = @test_businesses;
             last SWITCH;
        };
         /people/ && do {
             @entry_tuple = @person_entry;
             %name_hash = %pnr_name;
+            @spec_list = @test_persons;
+            last SWITCH;
+       };
+        /business contacts/ && do {
+            # Called recursively
+            @entry_tuple = @person_entry;
+            %name_hash = %pnr_name;
+            @spec_list = @business_contacts;
             last SWITCH;
        };
     }
@@ -176,10 +192,10 @@ sub populate {
     my $statement;
     local $sth_rdb;
     my $result_ref;
-    @test_list = $target eq "org" ? @test_businesses : @test_persons;
+    
     if ($specific) {
-        for my $test_item (@test_list) {
-            $statement = "SELECT * FROM $entry_tuple[0] where $entry_tuple[1]=$test_item";
+        for my $item (@spec_list) {
+            $statement = "SELECT * FROM $entry_tuple[0] where $entry_tuple[1]=$item";
             $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
             $sth_rdb->execute();
             $result_ref = $sth_rdb->fetchall_arrayref;
@@ -214,14 +230,32 @@ sub populate {
     # Get the result set, store the key elements and insert the result set locally
     for my $row (@result_set) {
         #trace_print ${$row}[0];
-        push @collection, ${$row}[$number_column];
+        my $number = ${$row}[$number_column];
+        push @collection, $number;
+        
+        # Fetch the business contact persons if processing organizations
+        if ($target eq "organizations") {
+            $statement = "SELECT pnr FROM acin_intr20 WHERE orgnr=$number";
+            my $sth = eval { $dbh_rdb->prepare( $statement ) };
+            $sth->execute();
+            my $result_ref = $sth->fetchall_arrayref;
+            if ($#{$result_ref} > -1) {
+                #print "==========\n$number\n----------\n";
+                for my $item_ref (@{$result_ref}) {
+                    # Data is in first element
+                    #print "${$item_ref}[0]\n";
+                    $business_contacts{${$item_ref}[0]}++
+                }
+            }
+        }
+        
         if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
             $row = Anonymize->enact($dbh_rdb, $entry_tuple[0], $sth_rdb, $row, \@test_list);
         }
         trace_print "Inserting  : @{$row}\n";
         eval { $sth_local->execute(@{$row}) };
-     }
+    }
     
     # For every table with an identity number relation fetch the rows that correspond
     # to the keys in the fetched collection
@@ -312,11 +346,14 @@ sub populate {
             }
         }
     }
+    # Add the buisness contacts to the test objects as specific people
+    if ($target eq "organizations") {
+        @business_contacts = keys %business_contacts;
+        trace_print "Including $#business_contacts business contacts to people collection.\n";
+        local $specific = 1;
+        populate "business contacts";
+    }
+    
 }
 
-# The different type of entities to handle
-our @targets = qw(organizations people);
-for my $target (@targets) {
-    populate $target;
-}
 

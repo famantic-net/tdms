@@ -478,6 +478,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                     }
                     close $fh;
                     if ($transfer) {
+                        trace_print "Transfering $filename\n";
                         open my $fh, "<", "$export_dir/$filename";
                         my $lrecl = $exporter->row_len;
                         my $ftp = new Net::FTP($mainframe_ip, Debug => 0) or die "Can't connect to $mainframe_ip: $@";
