@@ -166,34 +166,48 @@ sub populate {
     my @spec_list;
     my %name_hash;
     my $target = shift;
+    my @added_contacts;
+    
     trace_print "=== Processing $target ===\n";
     SWITCH: for ($target) {
-        /organizations/ && do {
+        /^organizations$/ && do {
             @entry_tuple = @company_entry;
             %name_hash = %orgnum_name;
             @spec_list = @test_businesses;
             last SWITCH;
-       };
-        /people/ && do {
+        };
+        /^people$/ && do {
             @entry_tuple = @person_entry;
             %name_hash = %pnr_name;
             @spec_list = @test_persons;
             last SWITCH;
-       };
-        /business contacts/ && do {
+        };
+        /^business contact organizations$/ && do {
             # Called recursively
+            $target = "organizations";
+            @entry_tuple = @company_entry;
+            %name_hash = %orgnum_name;
+            @spec_list = @business_contacts;
+            trace_print "\n... Including $#business_contacts business contacts ...\n";
+            last SWITCH;
+        };
+        /^business contact people$/ && do {
+            # Called recursively
+            $target = "people";
             @entry_tuple = @person_entry;
             %name_hash = %pnr_name;
             @spec_list = @business_contacts;
+            trace_print "\n... Including $#business_contacts business contacts ...\n";
             last SWITCH;
-       };
+        };
     }
     trace_print "\n--- Fetching from $entry_tuple[0] ---\n";
     my $statement;
     local $sth_rdb;
-    my $result_ref;
+    my ($result_ref, @result_set);
     
     if ($specific) {
+        trace_print ">>> Specific list <<<\n";
         for my $item (@spec_list) {
             $statement = "SELECT * FROM $entry_tuple[0] where $entry_tuple[1]=$item";
             $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
@@ -244,7 +258,11 @@ sub populate {
                 for my $item_ref (@{$result_ref}) {
                     # Data is in first element
                     #print "${$item_ref}[0]\n";
-                    $business_contacts{${$item_ref}[0]}++
+                    my $contact = ${$item_ref}[0];
+                    unless (exists $business_contacts{$contact}) {
+                        $business_contacts{$contact}++;
+                        push @added_contacts, $contact;
+                    }
                 }
             }
         }
@@ -346,12 +364,12 @@ sub populate {
             }
         }
     }
-    # Add the buisness contacts to the test objects as specific people
-    if ($target eq "organizations") {
-        @business_contacts = keys %business_contacts;
-        trace_print "Including $#business_contacts business contacts to people collection.\n";
+    # Add the business contacts to the test objects as specific lists
+    if ($target eq "organizations" and $#added_contacts > -1) {
+        local @business_contacts = @added_contacts;
         local $specific = 1;
-        populate "business contacts";
+        populate "business contact organizations";
+        populate "business contact people";
     }
     
 }
