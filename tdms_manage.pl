@@ -4,7 +4,7 @@
 
 =head1 Synopsis
 
-rdb_data.pl -[cdelmrtv]
+tdms_manage.pl -[cdelmrtv]
 
 =head1 Purpose
 
@@ -120,7 +120,7 @@ Classes used for creating export files per table.
 
 =head1 Examples
 
-C<rdb_data.pl -lm>
+C<tdms_manage.pl -lm>
 
 =over 4
 
@@ -128,7 +128,7 @@ Show metadata for the local RDB replica.
 
 =back
 
-C<rdb_data.pl -lc>
+C<tdms_manage.pl -lc>
 
 =over 4
 
@@ -136,7 +136,7 @@ Display a count of rows for each table in the local RBD replica.
 
 =back
 
-C<rdb_data.pl -d>
+C<tdms_manage.pl -d>
 
 =over 4
 
@@ -144,7 +144,7 @@ Truncate all local tables.
 
 =back
 
-C<rdb_data.pl -ef>
+C<tdms_manage.pl -ef>
 
 =over 4
 
@@ -161,7 +161,7 @@ use feature 'unicode_strings';
 
 use export::TextExporter;
 
-require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
+require "tdms.conf" or die "Can't read the configuration file 'tdms.conf'!\n";
 
 getopts("cdeflmrstvx", \%opts);
 $count = 1 if $opts{c};

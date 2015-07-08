@@ -3,7 +3,7 @@
 
 =head1 Synopsis
 
-rdb2testdb.pl -[asv]
+tdms_populate.pl -[asv]
 
 =head1 Purpose
 
@@ -11,7 +11,7 @@ To populate the Test Data Management System with records from RDB (aka DB2REP).
 
 Will fetch records for companies and individuals each and their corresponding data
 in other tables. Number of records and keys that are used are specified in the
-file F<rdb2testdb.conf>.
+file F<tdms_populate.conf>.
 
 All data can be anonymized with the -a switch. 
 
@@ -21,13 +21,16 @@ All data can be anonymized with the -a switch.
 
 =item -a
 
-Anonymize all data before it is stored to the local database. This means that business numbers and person
-numbers will be altered to partly random figures. For businesses the first digit, indicating
-type of business, is preserved. For persons the year is preserved.
+Anonymize all data before it is stored to the local database. This means that
+data such as business numbers and person numbers will be altered to partly
+random figures. For businesses the first digit, indicating type of business, is
+preserved. For persons the year is preserved. Also names and adresses are
+altered to some random combinations.
 
 =item -s
 
-Fetch the specific test data for businesses and persons that have been specified in F<rdb2testdb.conf>.
+Fetch the specific test data for businesses and persons that have been specified
+in F<tdms_populate.conf>.
 
 =item -v
 
@@ -39,7 +42,7 @@ Generate trace output showing processed tables and inserts.
 
 =over
 
-=item rdb2testdb.conf
+=item tdms_populate.conf
 
 Contains configuration data such as IP-address to RDB and user/pw, table/field realtions etc.
 
@@ -64,7 +67,7 @@ Classes used for creating anonymized fields.
 
 =head1 Examples
 
-C<./rdb2testdb.pl -av | tee testdb_populate.log>
+C<./tdms_populate.pl -av | tee testdb_populate.log>
 
 Anonymizes and turns on verbose output showing what is being inserted into the local database.
 
@@ -77,7 +80,7 @@ use feature 'unicode_strings';
 use anon::Anonymize;
 
 # Mapping of table to relevant column
-require "rdb2testdb.conf" or die "Can't read the configuration file 'rdb2testdb.conf'!\n";
+require "tdms.conf" or die "Can't read the configuration file 'tdms.conf'!\n";
 
 getopts("asv", \%opts);
 $anonymize = 1 if $opts{a};
@@ -162,13 +165,13 @@ populate "organizations";
 populate "people";
 
 sub populate {
+    my $target = shift;
     my @entry_tuple;
     my @spec_list;
     my %name_hash;
-    my $target = shift;
     my @added_contacts;
     
-    trace_print "=== Processing $target ===\n";
+    trace_print "\n=== Processing $target ===\n";
     SWITCH: for ($target) {
         /^organizations$/ && do {
             @entry_tuple = @company_entry;

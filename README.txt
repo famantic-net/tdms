@@ -52,14 +52,14 @@ to test or provide test data to testers and customers.
 Tool
 ====
 
-There are two main programs used, 'rdb2testdb.pl' and 'rdb_data.pl'.
+There are two main programs used, 'tdms_populate.pl' and 'tdms_manage.pl'.
 
 
-rdb_data.pl
------------
+tdms_manage.pl
+--------------
 
 Synopsis
-       rdb_data.pl -[cdelmrtv]
+       tdms_manage.pl -[cdelmrtv]
 
 Purpose
        Helper functions for Test Data Management System work.
@@ -91,28 +91,28 @@ Options
 
 
 Examples
-       "rdb_data.pl -lm"
+       "tdms_manage.pl -lm"
 
            Show metadata for the local RDB replica.
 
-       "rdb_data.pl -lc"
+       "tdms_manage.pl -lc"
 
            Display a count of rows for each table in the local RBD replica.
 
-       "rdb_data.pl -d"
+       "tdms_manage.pl -d"
 
            Truncate all local tables.
 
-       "rdb_data.pl -ef"
+       "tdms_manage.pl -ef"
 
            Export all tables to text format and ftp to mainframe.
 
 
-rdb2testdb.pl
--------------
+tdms_populate.pl
+----------------
 
 Synopsis
-       rdb2testdb.pl -[asv]
+       tdms_populate.pl -[asv]
 
 Purpose
        To populate the Test Data Management System with records from RDB (aka
@@ -120,7 +120,7 @@ Purpose
 
        Will fetch records for companies and individuals each and their
        corresponding data in other tables. Number of records and keys that are
-       used are specified in the file rdb2testdb.conf.
+       used are specified in the file tdms.conf.
 
        All data can be anonymized with the -a switch.
 
@@ -131,13 +131,13 @@ Options
            type of business, is preserved. For persons the year is preserved.
 
        -s  Fetches the specific test data for businesses and persons that have
-           been specified in rdb2testdb.conf.
+           been specified in tdms.conf.
 
        -v  Generates trace output showing processed tables and inserts.
 
 
 Examples
-       "./rdb2testdb.pl -av | tee testdb_populate.log"
+       "./tdms_populate.pl -av | tee testdb_populate.log"
 
        Anonymizes and turns on verbose output showing what is being inserted
        into the local database.
@@ -146,9 +146,9 @@ Examples
 Additional files
 ----------------
 
-       rdb2testdb.conf
+       tdms.conf
            Contains configuration data such as IP-address to RDB and user/pw,
-           table/field realtions etc.
+           table/field relations etc.
 
        Anonymization
        -------------
