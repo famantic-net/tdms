@@ -96,6 +96,7 @@ if ($anonymize and $specific) {
 
 
 open LOG, ">>", "testdb_populate.log" or warn "Can't open 'testdb_populate.log' for logging: $!\n";
+*STDERR = *LOG unless $verbose;
 
 sub trace_print {
     ## If not enabled do nothing
@@ -309,12 +310,21 @@ sub populate {
             # Format is [{table => key},{table2 => key2}]
             # @relations is a list of the tables that have foreign key relations
             my @relations = map {keys ${$_}[0]} @int_relations;
+            #trace_print "Relations: @relations\n";
             # %relations_full is a hash where each foreign key field in the current table
             # maps to the related other table=>field pair.
             my %relations_full;
             if ( grep(/$table/, @relations) ) {
-                %relations_full = map { if ($table eq ${[ keys ${$_}[0] ]}[0]) { ${$_}[0]{$table} => ${$_}[1] } } @int_relations;
+                # The following map construct has some bug where it doesn't consistetly create a correct hash, why it was expanded instead
+                #%relations_full = map { if ($table eq ${[ keys ${$_}[0] ]}[0]) { trace_print ${$_}[0]{$table}, "\n"; ${$_}[0]{$table} => ${$_}[1] } } @int_relations;
+                for my $relation (@int_relations) {
+                    if ($table eq ${[ keys ${$relation}[0] ]}[0]) {
+                        #trace_print ${$relation}[0]{$table}, "\n";
+                        $relations_full{${$relation}[0]{$table}} = ${$relation}[1];
+                    }
+                }
                 delete $relations_full{""}; # In case there are empty elements from skipping relations
+                #trace_print "Related keys: ", keys %relations_full, "\n";
             }
             for my $column1 (keys %relations_full) {
                 my $column1_pos;
@@ -325,9 +335,12 @@ sub populate {
                 # Collect all foreign key fields
                 my @related_data;
                 for my $row (@{$result_table_ref}) {
-                    #trace_print "Related: ${$row}[$column1_num]\n";
-                    push @related_data, ${$row}[$column1_pos];
+                    my $related = ${$row}[$column1_pos];
+                    #trace_print "Related: $related\n";
+                    $related =~ s/\s+$//; # Remove trailng blanks
+                    push @related_data, $related;
                 }
+                #trace_print "Related data: @related_data\n";
                 # Fetch the data from the related tables
                 for my $rel_item (@related_data) {
                     for my $table2 (keys %{$relations_full{$column1}}) {
