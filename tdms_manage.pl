@@ -185,6 +185,7 @@ if ($#{[ keys %opts ]} < 0) {
 
 
 $localdb = 1 if $truncate or $roll_dates or $export;
+if ($transfer and not $export) {print "Will only transfer files when exporting.\n"; exit 2}
 
 sub error_handler {
     
@@ -445,8 +446,25 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                                 acib_acitmin
                                 acib_acitkcn
                                 acib_acitgaf
+                                acib_acitoms
+                                acib_acitft2
+                                acib_acitboa
+                                actx_tax02
+                                actx_tax01
+                                actx_ftax
+                                acra_uphi
+                                acra_ratssah
+                                acra_ratssa
+                                acra_klient
+                                acpr_prtprh
+                                acpr_prtpr
+                                acin_intr40
+                                acin_intr30
+                                acin_intr20
+                                acin_intr10
+                                acxx_bnycktal
                             );
-            last SWITCH unless grep /$name/, @tables ;
+            last SWITCH unless grep /$name$/, @tables ;
             #my $object = new Exporter($name);
             #for my $key (keys %{$object}) {
             #    print "$key\n";
@@ -462,7 +480,6 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             my $result_table_ref = $sth->fetchall_arrayref;
             my $rows = ${${$result_table_ref}[0]}[0];
             if ($rows > 0) {
-                my $exporter = new TextExporter($name);
                 $statement = "SELECT * FROM $table";
                 $sth = $dbh->prepare( $statement );
                 $sth->execute();
@@ -470,8 +487,10 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                 unless ( -e $export_dir ) {
                     mkdir $export_dir
                 }
+                my $exporter = new TextExporter($name);
                 my $filename = $exporter->filename;
                 if (open my $fh, ">", "$export_dir/$filename") {
+                    trace_print "Writing $filename\n";
                     for my $row (@{$result_table_ref}) {
                         #print $fh "@{$row}\n"
                         print $fh $exporter->row_string($row, $sth, \%types), "\n";

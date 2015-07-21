@@ -65,11 +65,11 @@ Purpose
        Helper functions for Test Data Management System work.
 
 Options
-       -c  Counts the number of row in each table
+       -c  Count the number of row in each table
 
-       -d  Truncates, ie deletes all rows, in all tables. Implies "-l".
+       -d  Truncate, ie deletes all rows, in all tables. Implies "-l".
 
-       -e  Exports all tables to text format according to layout information
+       -e  Export all tables to text format according to layout information
            defined in classes under .../export/layout.
 
        -f  FTP exported files to mainframe.
@@ -81,13 +81,13 @@ Options
 
        -r  Roll dates, i.e update certain timestamps.
 
-       -s  Shows the contents of all tables that are non-empty.
+       -s  Show the contents of all tables that are non-empty.
 
        -t  Display fields that are defined as "SQL_TIMESTAMP" from all tables.
 
        -v  Turn on verbose prints to STDOUT about what's happening.
 
-       -x  Shows random example data for each field in all non-empty tables.
+       -x  Show random example data for each field in all non-empty tables.
 
 
 Examples
@@ -125,15 +125,15 @@ Purpose
        All data can be anonymized with the -a switch.
 
 Options
-       -a  Anonymizes all data before it is stored to the local database. This
+       -a  Anonymize all data before it is stored to the local database. This
            means that business numbers and person numbers will be altered to
            partly random figures. For businesses the first digit, indicating
            type of business, is preserved. For persons the year is preserved.
 
-       -s  Fetches the specific test data for businesses and persons that have
+       -s  Fetch the specific test data for businesses and persons that have
            been specified in tdms.conf.
 
-       -v  Generates trace output showing processed tables and inserts.
+       -v  Generate trace output showing processed tables and inserts.
 
 
 Examples

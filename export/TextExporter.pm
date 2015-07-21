@@ -26,6 +26,23 @@ use export::layout::acib_acitnoe;
 use export::layout::acib_acitmin;
 use export::layout::acib_acitkcn;
 use export::layout::acib_acitgaf;
+use export::layout::acib_acitoms;
+use export::layout::acib_acitft2;
+use export::layout::acib_acitboa;
+use export::layout::actx_tax02;
+use export::layout::actx_tax01;
+use export::layout::actx_ftax;
+use export::layout::acra_uphi;
+use export::layout::acra_ratssah;
+use export::layout::acra_ratssa;
+use export::layout::acra_klient;
+use export::layout::acpr_prtprh;
+use export::layout::acpr_prtpr;
+use export::layout::acin_intr40;
+use export::layout::acin_intr30;
+use export::layout::acin_intr20;
+use export::layout::acin_intr10;
+use export::layout::acxx_bnycktal;
 
 #our %table_map = (
 #    acra_rapp => "AcraRapp",
