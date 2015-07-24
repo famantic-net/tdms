@@ -423,56 +423,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $export && do {
-            #my @tables = qw(    acra_rapp
-            #                    acba_rathist
-            #                    acba_ratindik
-            #                    acba_rating
-            #                    acba_scoring2
-            #                    acib_acitbiv
-            #                    acib_acitbif
-            #                    acib_acitarn
-            #                    acib_acitaga
-            #                    acgd_organi01
-            #                    acgd_empfun01
-            #                    acdt_dttpv
-            #                    acdt_dttph
-            #                    acib_acitftg
-            #                    acib_acitft3
-            #                    acib_acitefi
-            #                    acib_acitver
-            #                    acib_acitntf
-            #                    acib_acitnon
-            #                    acib_acitnoe
-            #                    acib_acitmin
-            #                    acib_acitkcn
-            #                    acib_acitgaf
-            #                    acib_acitoms
-            #                    acib_acitft2
-            #                    acib_acitboa
-            #                    actx_tax02
-            #                    actx_tax01
-            #                    actx_ftax
-            #                    acra_uphi
-            #                    acra_ratssah
-            #                    acra_ratssa
-            #                    acra_klient
-            #                    acpr_prtprh
-            #                    acpr_prtpr
-            #                    acin_intr40
-            #                    acin_intr30
-            #                    acin_intr20
-            #                    acin_intr10
-            #                    acxx_bnycktal
-            #                );
-            #last SWITCH unless grep /$name$/, @tables ;
             last SWITCH unless grep /$name$/, &{$export_tables} ;
-            #my $object = new Exporter($name);
-            #for my $key (keys %{$object}) {
-            #    print "$key\n";
-            #    print "@{${$object}{$key}}\n";
-            #    print "@{$object->$key}\n";
-            #}
-            #exit;
             my $dbh = $localdb ? $dbh_local : $dbh_rdb;
             my $statement = "SELECT count(*) FROM $table";
             my $sth = eval { $dbh->prepare( $statement ) };
