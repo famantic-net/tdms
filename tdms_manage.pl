@@ -114,7 +114,7 @@ Classes used for creating export files per table.
  export::layout::actx_ftax.pm
  export::layout::actx_tax01.pm
  export::layout::actx_tax02.pm
- export::layout::nyckeltal.pm
+ export::layout::bnycktal.pm
  
 =back
 
