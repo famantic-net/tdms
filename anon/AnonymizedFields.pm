@@ -13,6 +13,7 @@ use strict;
 # The keys separate different types
 our %AnonymizedFields = (
     all => {
+        acba_rathist => [ qw(orgnr) ],
         acba_ratindik => [ qw(orgnr) ],
         acba_rating => [ qw(orgnr) ],
         acba_scoring2 => [ qw(orgnr) ],
@@ -54,6 +55,7 @@ our %AnonymizedFields = (
         nyckeltal => [ qw(org_num) ],
     },
     orgnum => {
+        acba_rathist => [ qw(orgnr) ],
         acba_ratindik => [ qw(orgnr) ],
         acba_rating => [ qw(orgnr) ],
         acba_scoring2 => [ qw(orgnr) ],
