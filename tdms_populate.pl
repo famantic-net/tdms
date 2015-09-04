@@ -176,12 +176,14 @@ sub populate {
     SWITCH: for ($target) {
         /^organizations$/ && do {
             @entry_tuple = @company_entry;
+            @tob_tuple = @company_testobject_indicator;
             %name_hash = %orgnum_name;
             @spec_list = @test_businesses;
             last SWITCH;
         };
         /^people$/ && do {
             @entry_tuple = @person_entry;
+            @tob_tuple = @person_testobject_indicator;
             %name_hash = %pnr_name;
             @spec_list = @test_persons;
             last SWITCH;
@@ -190,6 +192,7 @@ sub populate {
             # Called recursively
             $target = "organizations";
             @entry_tuple = @company_entry;
+            @tob_tuple = @company_testobject_indicator;
             %name_hash = %orgnum_name;
             @spec_list = @business_contacts;
             trace_print "\n... Including $#business_contacts business contacts ...\n";
@@ -199,6 +202,7 @@ sub populate {
             # Called recursively
             $target = "people";
             @entry_tuple = @person_entry;
+            @tob_tuple = @person_testobject_indicator;
             %name_hash = %pnr_name;
             @spec_list = @business_contacts;
             trace_print "\n... Including $#business_contacts business contacts ...\n";
@@ -221,11 +225,32 @@ sub populate {
         }
     }
     else {
-        $statement = "SELECT * FROM $entry_tuple[0] order by random() limit $init_size";
-        $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
-        $sth_rdb->execute();
-        $result_ref = $sth_rdb->fetchall_arrayref;
-        @result_set = @{ $result_ref };
+        my $fetched_tobs = 0;
+        do {
+            $statement = "SELECT * FROM $entry_tuple[0] order by random() limit " . ($init_size - $fetched_tobs);
+            $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
+            $sth_rdb->execute();
+            $result_ref = $sth_rdb->fetchall_arrayref;
+            push @result_set, @{ $result_ref };
+            my $field_num = sub {
+                my $field = shift;
+                #print "Field     : $field\n";
+                for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+                    return $i if $sth_rdb->{NAME}->[$i] eq $field; 
+                }
+            };
+            # Remove test objects that might have been fetched
+            my $i = 0;
+            for my $row (@result_set) {
+                if (${$row}[&{$field_num}($tob_tuple[1])] == 4) {
+                    splice @result_set, $i, 1;
+                }
+                else {
+                    $i++;
+                }
+            }
+            $fetched_tobs = $init_size - ($#result_set + 1);
+        } until ($fetched_tobs == 0);
     }
     
     # Prepare the insert statement with the number of columns
@@ -273,7 +298,7 @@ sub populate {
         
         if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
-            $row = Anonymize->enact($dbh_rdb, $entry_tuple[0], $sth_rdb, $row, \@test_list);
+            $row = Anonymize->enact($dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $row, \@test_list);
         }
         trace_print "Inserting  : @{$row}\n";
         eval { $sth_local->execute(@{$row}) };
@@ -300,7 +325,7 @@ sub populate {
             for my $row (@{$result_table_ref}) {
                 if ($anonymize) { # Transform the row into anonymous data
                     trace_print "Anonymizing: @{$row}\n";
-                    $row = Anonymize->enact($dbh_rdb, $table, $sth_rdb, $row, \@test_list);
+                    $row = Anonymize->enact($dbh_rdb, $table, \@tob_tuple, $sth_rdb, $row, \@test_list);
                 }
                 trace_print "Inserting  : @{$row}\n";
                 eval { $sth_local->execute(@{$row}) };
@@ -365,7 +390,7 @@ sub populate {
                             for my $row (@{$result_table_ref}) {
                                 if ($anonymize) { # Transform the row into anonymous data
                                     trace_print "Anonymizing: @{$row}\n";
-                                    $row = Anonymize->enact($dbh_rdb, $table2, $sth_rdb, $row, \@test_list);
+                                    $row = Anonymize->enact($dbh_rdb, $table2, \@tob_tuple, $sth_rdb, $row, \@test_list);
                                 }
                                 trace_print "Inserting  : @{$row}\n";
                                 eval { $sth_local->execute(@{$row}) };

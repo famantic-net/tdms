@@ -17,7 +17,7 @@ sub enact { #
     my $class = ref($invocant) || $invocant;
     $dbh_rdb = shift;
     #my ($target, $table, $sth, $row, $test_list) = @_;
-    my ($table, $sth, $row, $testobject_list) = @_;
+    my ($table, $tob_tuple_ref, $sth, $row, $testobject_list) = @_;
     #print "Processing : $target\nHave table : $table\n";
     #print "Received   : @{$row}\n";
     # Find the column that contains the key
@@ -31,8 +31,10 @@ sub enact { #
     my $id; # Used to keep table fields consistent
     
     { # Businesses
-        if ($table =~ m/acib_acitftg/) {
-            ${$row}[&{$field_num}("ftg_istatus_kod")] = 4; # Testobject
+        #if ($table =~ m/acib_acitftg/) {
+        if ($table =~ m/${$tob_tuple_ref}[0]/) {
+            # ${$row}[&{$field_num}("ftg_istatus_kod")] = 4; # Testobject
+            ${$row}[&{$field_num}(${$tob_tuple_ref}[1])] = 4; # Testobject
         }
 
         my $orgnum = new BusinessNum($testobject_list);
@@ -74,8 +76,10 @@ sub enact { #
     }
     
     { # Individuals
-        if ($table =~ m/acpr_prtpr/) {
-            ${$row}[&{$field_num}("status")] = 4; # Testobject
+        #if ($table =~ m/acpr_prtpr/) {
+        if ($table =~ m/${$tob_tuple_ref}[0]/) {
+            #${$row}[&{$field_num}("status")] = 4; # Testobject
+            ${$row}[&{$field_num}(${$tob_tuple_ref}[1])] = 4; # Testobject
         }
 
         my $pnum = new PersonNum($testobject_list);
