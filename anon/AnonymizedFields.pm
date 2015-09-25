@@ -8,7 +8,7 @@ package AnonymizedFields;
 
 use strict;
 
-# Fields to anonymize. Generated from selected entries obtained with 'rdb_data.pl -xl'
+# Fields to anonymize. Generated from selected entries obtained with 'tdms_manage.pl -xl' and saved in 'anonymize_me.txt'
 # perl -e 'open(my $fh, "<", "anonymize_me.txt") or die "Cant open"; {local undef $/; $anon = <$fh>};  while ($anon =~ m/(.+?)^>\n/smg) {$block = $1; ($table) = $block =~ m/^([^\n]+)/; my @fields; while ($block =~ m/<([^>]+)>/smg) {push @fields, $1} print "$table => [ qw(@fields) ],\n"}'
 # The keys separate different types
 our %AnonymizedFields = (

@@ -30,13 +30,12 @@ sub enact { #
     };
     my $id; # Used to keep table fields consistent
     
-    { # Businesses
-        #if ($table =~ m/acib_acitftg/) {
-        if ($table =~ m/${$tob_tuple_ref}[0]/) {
-            # ${$row}[&{$field_num}("ftg_istatus_kod")] = 4; # Testobject
-            ${$row}[&{$field_num}(${$tob_tuple_ref}[1])] = 4; # Testobject
-        }
+    # Set status field to test object
+    if ($table =~ m/${$tob_tuple_ref}[0]/) {
+        ${$row}[&{$field_num}(${$tob_tuple_ref}[1])] = 4; # Testobject
+    }
 
+    { # Businesses
         my $orgnum = new BusinessNum($testobject_list);
         if (grep /$table/, $orgnum->list_attr) {
             for my $field (@{$orgnum->fields($table)}) {
@@ -76,12 +75,6 @@ sub enact { #
     }
     
     { # Individuals
-        #if ($table =~ m/acpr_prtpr/) {
-        if ($table =~ m/${$tob_tuple_ref}[0]/) {
-            #${$row}[&{$field_num}("status")] = 4; # Testobject
-            ${$row}[&{$field_num}(${$tob_tuple_ref}[1])] = 4; # Testobject
-        }
-
         my $pnum = new PersonNum($testobject_list);
         if (grep /$table/, $pnum->list_attr) {
             for my $field (@{$pnum->fields($table)}) {

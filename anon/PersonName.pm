@@ -56,7 +56,7 @@ sub anonymizeGivenName {
     unless ($anonymized{$real_name}) {
         @given_names = @{GivenNames->new} unless $#given_names > -1;
         my $grand = int(rand($#given_names+1));
-        $anonymized{$real_name} = uc("$given_names[$grand] ACME");
+        $anonymized{$real_name} = uc("$given_names[$grand] #TOBJ#");
     }
     #print "Anon: $anonymized{$real_name}\n";
     return sprintf "%- ${name_field_len}s", $anonymized{$real_name};
