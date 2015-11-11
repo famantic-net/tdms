@@ -1,18 +1,16 @@
-# ===========================
-# Test data management system
-# ===========================
+---
+# **Test data management system**
+---
 
 https://devtools.bisnode.com/confluence/display/~davtor/Test+data+management+system
 
 
 ## Goals
-## =====
 
 Enable a long term solution for keeping test data viable in the mainframe environment.
 
 
 ## Background and strategic fit
-## ============================
 
 So far test data has been manually updated in the mainframe and automatically been becoming out of
 date. Test characteristics are calculated on raw data, some of which will be dependent on how old they
@@ -50,21 +48,19 @@ to test or provide test data to testers and customers.
 
 
 ## Tool
-## ====
 
 There are two main programs used, 'tdms_populate.pl' and 'tdms_manage.pl'.
 
 
 ### tdms_manage.pl
-### --------------
 
-Synopsis
+    Synopsis
        tdms_manage.pl -[cdelmrtv]
 
-Purpose
+    Purpose
        Helper functions for Test Data Management System work.
 
-Options
+    Options
        -c  Count the number of row in each table
 
        -d  Truncate, ie deletes all rows, in all tables. Implies "-l".
@@ -90,7 +86,7 @@ Options
        -x  Show random example data for each field in all non-empty tables.
 
 
-Examples
+    Examples
        "tdms_manage.pl -lm"
 
            Show metadata for the local RDB replica.
@@ -109,12 +105,11 @@ Examples
 
 
 ### tdms_populate.pl
-### ----------------
 
-Synopsis
+    Synopsis
        tdms_populate.pl -[asv]
 
-Purpose
+    Purpose
        To populate the Test Data Management System with records from RDB (aka
        DB2REP).
 
@@ -124,7 +119,7 @@ Purpose
 
        All data can be anonymized with the -a switch.
 
-Options
+    Options
        -a  Anonymize all data before it is stored to the local database. This
            means that business numbers and person numbers will be altered to
            partly random figures. For businesses the first digit, indicating
@@ -136,7 +131,7 @@ Options
        -v  Generate trace output showing processed tables and inserts.
 
 
-Examples
+    Examples
        "./tdms_populate.pl -av | tee testdb_populate.log"
 
        Anonymizes and turns on verbose output showing what is being inserted
@@ -144,9 +139,8 @@ Examples
 
 
 ## Additional files
-## ================
 
-       tdms.conf
+       tdms_conf.pmc
            Contains configuration data such as IP-address to RDB and user/pw,
            table/field relations etc.
 
@@ -218,6 +212,5 @@ Examples
 
 
 ## Attribute
-## =========
 
 nenad.antic@bisnode.com
