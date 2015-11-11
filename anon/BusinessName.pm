@@ -74,6 +74,7 @@ sub anonymizeBusinessAbbr {
     #    $abbr .= $name[$pos];
     #}
     #print "Abbr: $abbr\n";
+    # XXX: Remove ACME from abbr
     $anonymized{$name_id}{abbr} = substr("ACME" . int(rand(10)) . $name, 0, $name_field_len);
     return sprintf("%- ${name_field_len}s", $anonymized{$name_id}{abbr});
 }

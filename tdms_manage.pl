@@ -161,7 +161,8 @@ use feature 'unicode_strings';
 
 use export::TextExporter;
 
-require "tdms.conf" or die "Can't read the configuration file 'tdms.conf'!\n";
+# Configuration variables
+use tdms;
 
 getopts("cdeflmrstvx", \%opts);
 $count = 1 if $opts{c};

@@ -79,8 +79,8 @@ use feature 'unicode_strings';
 
 use anon::Anonymize;
 
-# Mapping of table to relevant column
-require "tdms.conf" or die "Can't read the configuration file 'tdms.conf'!\n";
+# Configuration variables
+use tdms;
 
 getopts("asv", \%opts);
 $anonymize = 1 if $opts{a};
@@ -225,6 +225,7 @@ sub populate {
         }
     }
     else {
+        # XXX: Rename $fetched_tobs to something not confusing, like $rs_delta
         my $fetched_tobs = 0;
         do {
             $statement = "SELECT * FROM $entry_tuple[0] order by random() limit " . ($init_size - $fetched_tobs);

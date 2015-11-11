@@ -3,10 +3,11 @@
 # Postgresql connection settings
 # For local DB
 our $local_db = "DB2REP";
-our $local_host = "127.0.0.1";
+our $local_host = "172.17.0.128";
+#our $local_host = "127.0.0.1";
 our $local_dbport = "5432";
 our $local_dbuid = "db2moto";
-our $local_dbpwd = "";
+our $local_dbpwd = "otom2bd";
 # For remote DB
 our $remote_db = "DB2REP";
 our $remote_host = "10.46.117.29";
@@ -24,7 +25,7 @@ our $mainframe_pwd = "Z9P1Y8H0";
 our $export_dir = "ftp";
 
 # The number of records to fetch from the entry tables
-our $init_size = 100;
+our $init_size = 10;
 
 # The entry tables and their key column
 our @company_entry = qw(acib_acitftg ftg_org_num);
