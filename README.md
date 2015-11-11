@@ -1,18 +1,18 @@
-===========================
-Test data management system
-===========================
+# ===========================
+# Test data management system
+# ===========================
 
 https://devtools.bisnode.com/confluence/display/~davtor/Test+data+management+system
 
 
-Goals
------
+## Goals
+## =====
 
 Enable a long term solution for keeping test data viable in the mainframe environment.
 
 
-Background and strategic fit
-----------------------------
+## Background and strategic fit
+## ============================
 
 So far test data has been manually updated in the mainframe and automatically been becoming out of
 date. Test characteristics are calculated on raw data, some of which will be dependent on how old they
@@ -49,14 +49,14 @@ to test or provide test data to testers and customers.
                '-------------'-----------<------'
 
 
-Tool
-====
+## Tool
+## ====
 
 There are two main programs used, 'tdms_populate.pl' and 'tdms_manage.pl'.
 
 
-tdms_manage.pl
---------------
+### tdms_manage.pl
+### --------------
 
 Synopsis
        tdms_manage.pl -[cdelmrtv]
@@ -108,8 +108,8 @@ Examples
            Export all tables to text format and ftp to mainframe.
 
 
-tdms_populate.pl
-----------------
+### tdms_populate.pl
+### ----------------
 
 Synopsis
        tdms_populate.pl -[asv]
@@ -143,8 +143,8 @@ Examples
        into the local database.
 
 
-Additional files
-----------------
+## Additional files
+## ================
 
        tdms.conf
            Contains configuration data such as IP-address to RDB and user/pw,
@@ -217,7 +217,7 @@ Additional files
 
 
 
-Attribute
-=========
+## Attribute
+## =========
 
 nenad.antic@bisnode.com

@@ -231,11 +231,10 @@ sub populate {
         }
     }
     else {
-        # XXX: Rename $fetched_tobs to something not confusing, like $rs_delta
         use tdms_conf qw($init_size);
-        my $fetched_tobs = 0;
+        my $rs_delta = 0;
         do {
-            $statement = "SELECT * FROM $entry_tuple[0] order by random() limit " . ($init_size - $fetched_tobs);
+            $statement = "SELECT * FROM $entry_tuple[0] order by random() limit " . ($init_size - $rs_delta);
             $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
             $sth_rdb->execute();
             $result_ref = $sth_rdb->fetchall_arrayref;
@@ -257,8 +256,8 @@ sub populate {
                     $i++;
                 }
             }
-            $fetched_tobs = $init_size - ($#result_set + 1);
-        } until ($fetched_tobs == 0);
+            $rs_delta = $init_size - ($#result_set + 1);
+        } until ($rs_delta == 0);
     }
     
     # Prepare the insert statement with the number of columns

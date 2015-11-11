@@ -66,16 +66,16 @@ sub anonymizeBusinessAbbr {
     my $name = $anonymized{$name_id}{full};
     $name =~ s/\s+//g; # Remove all spaces
     $name = uc $name;
-    #my @name = split '', $name;
+    my @name = split '', $name;
     #print ": @name\n";
-    #my $pos;
-    #while ($pos < ($name_field_len - 4)) {
-    #    $pos += int(rand(3)+1);
-    #    $abbr .= $name[$pos];
-    #}
+    my $pos = 6;
+    my $abbr = $name[$pos];
+    while ($pos < ($#name)) {
+        $pos += int(rand(3)+1);
+        $abbr .= $name[$pos];
+    }
     #print "Abbr: $abbr\n";
-    # XXX: Remove ACME from abbr
-    $anonymized{$name_id}{abbr} = substr("ACME" . int(rand(10)) . $name, 0, $name_field_len);
+    $anonymized{$name_id}{abbr} = substr($abbr, 0, $name_field_len);
     return sprintf("%- ${name_field_len}s", $anonymized{$name_id}{abbr});
 }
 
