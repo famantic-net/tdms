@@ -73,19 +73,18 @@ Anonymizes and turns on verbose output showing what is being inserted into the l
 
 =cut
 
+use strict;
 use DBI;
 use Getopt::Std;
 use feature 'unicode_strings';
 
 use anon::Anonymize;
 
-# Configuration variables
-use tdms;
-
+our %opts;
 getopts("asv", \%opts);
-$anonymize = 1 if $opts{a};
-$specific = 1 if $opts{s};
-$verbose = 1 if $opts{v};
+our $anonymize = 1 if $opts{a};
+our $specific = 1 if $opts{s};
+our $verbose = 1 if $opts{v};
 
 if ($anonymize and $specific) {
     print "Refusing to anonymize the predefined test objects.\n";
@@ -125,7 +124,10 @@ sub trace_print {
 #                        {AutoCommit=>1,RaiseError=>1,PrintError=>0}
 #                    );
 
-our $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
+use tdms_conf qw($local_db $local_host $local_dbport $local_dbuid $local_dbpwd);
+use tdms_conf qw($remote_db $remote_host $remote_dbport $remote_dbuid $remote_dbpwd);
+our ($dbh_local, $dbh_rdb, $sth_rdb);
+$dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
                           host='$local_host';
                           port='$local_dbport'",
                           "$local_dbuid",
@@ -134,7 +136,7 @@ our $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
                     );
 $dbh_local->{pg_enable_utf8} = 1;
 
-our $dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
+$dbh_rdb = DBI->connect("dbi:Pg:dbname='$remote_db';
                         host='$remote_host';
                         port='$remote_dbport'",
                         "$remote_dbuid",
@@ -159,7 +161,7 @@ $dbh_rdb->{pg_enable_utf8} = 1;
 
 
 sub populate;
-our (%business_contacts, @business_contacts);
+our (@tob_tuple, %business_contacts, @business_contacts, @testobject_list);
 
 # The different type of entities to handle
 populate "organizations";
@@ -173,6 +175,9 @@ sub populate {
     my @added_contacts;
     
     trace_print "\n=== Processing $target ===\n";
+    use tdms_conf qw(@company_entry @person_entry @company_testobject_indicator
+                     @person_testobject_indicator %orgnum_name %pnr_name
+                     @test_businesses @test_persons);
     SWITCH: for ($target) {
         /^organizations$/ && do {
             @entry_tuple = @company_entry;
@@ -209,6 +214,7 @@ sub populate {
             last SWITCH;
         };
     }
+    @testobject_list = $target eq "organizations" ? @test_businesses : @test_persons;
     trace_print "\n--- Fetching from $entry_tuple[0] ---\n";
     my $statement;
     local $sth_rdb;
@@ -226,6 +232,7 @@ sub populate {
     }
     else {
         # XXX: Rename $fetched_tobs to something not confusing, like $rs_delta
+        use tdms_conf qw($init_size);
         my $fetched_tobs = 0;
         do {
             $statement = "SELECT * FROM $entry_tuple[0] order by random() limit " . ($init_size - $fetched_tobs);
@@ -265,6 +272,7 @@ sub populate {
     
     my $sth_local = eval { $dbh_local->prepare($ins) };
     # Find the column that contains the key
+    my $number_column;
     for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
         #trace_print $sth_rdb->{NAME}->[$i];
         $number_column = $i if $sth_rdb->{NAME}->[$i] eq $entry_tuple[1]; 
@@ -299,7 +307,7 @@ sub populate {
         
         if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
-            $row = Anonymize->enact($dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $row, \@test_list);
+            $row = Anonymize->enact($dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $row, \@testobject_list);
         }
         trace_print "Inserting  : @{$row}\n";
         eval { $sth_local->execute(@{$row}) };
@@ -307,6 +315,7 @@ sub populate {
     
     # For every table with an identity number relation fetch the rows that correspond
     # to the keys in the fetched collection
+    use tdms_conf qw(@int_relations);
     for my $table (keys %name_hash) {
         trace_print "\n--- Fetching from $table ---\n";
         for my $num (@collection) {
@@ -326,7 +335,7 @@ sub populate {
             for my $row (@{$result_table_ref}) {
                 if ($anonymize) { # Transform the row into anonymous data
                     trace_print "Anonymizing: @{$row}\n";
-                    $row = Anonymize->enact($dbh_rdb, $table, \@tob_tuple, $sth_rdb, $row, \@test_list);
+                    $row = Anonymize->enact($dbh_rdb, $table, \@tob_tuple, $sth_rdb, $row, \@testobject_list);
                 }
                 trace_print "Inserting  : @{$row}\n";
                 eval { $sth_local->execute(@{$row}) };
@@ -391,7 +400,7 @@ sub populate {
                             for my $row (@{$result_table_ref}) {
                                 if ($anonymize) { # Transform the row into anonymous data
                                     trace_print "Anonymizing: @{$row}\n";
-                                    $row = Anonymize->enact($dbh_rdb, $table2, \@tob_tuple, $sth_rdb, $row, \@test_list);
+                                    $row = Anonymize->enact($dbh_rdb, $table2, \@tob_tuple, $sth_rdb, $row, \@testobject_list);
                                 }
                                 trace_print "Inserting  : @{$row}\n";
                                 eval { $sth_local->execute(@{$row}) };

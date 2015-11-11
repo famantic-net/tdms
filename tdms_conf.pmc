@@ -1,4 +1,9 @@
-# Perl syntax
+package tdms_conf;
+
+use strict;
+use vars qw(@ISA @EXPORT);
+@ISA=qw(Exporter);
+our @EXPORT_OK = ();
 
 # Postgresql connection settings
 # For local DB
@@ -14,27 +19,33 @@ our $remote_host = "10.46.117.29";
 our $remote_dbport = "5432";
 our $remote_dbuid = "nenant";
 our $remote_dbpwd = "nenant";
+push @EXPORT_OK, qw($local_db $local_host $local_dbport $local_dbuid $local_dbpwd);
+push @EXPORT_OK, qw($remote_db $remote_host $remote_dbport $remote_dbuid $remote_dbpwd);
 
 # FTP access info to mainframe
 our $mainframe_ip = "164.9.148.225";
 #our $mainframe_ip = "85.119.132.30";
 our $mainframe_uid = "FTPTEDA";
 our $mainframe_pwd = "Z9P1Y8H0";
+push @EXPORT_OK, qw($mainframe_ip $mainframe_uid $mainframe_pwd);
 
 # Directory where exported files are written
 our $export_dir = "ftp";
+push @EXPORT_OK, qw($export_dir);
 
 # The number of records to fetch from the entry tables
 our $init_size = 10;
+push @EXPORT_OK, qw($init_size);
 
 # The entry tables and their key column
 our @company_entry = qw(acib_acitftg ftg_org_num);
 our @person_entry = qw(acpr_prtpr pnr);
+push @EXPORT_OK, qw(@company_entry @person_entry);
 
 # Test object indicators
 our @company_testobject_indicator = qw(acib_acitftg ftg_istatus_kod);
 our @person_testobject_indicator = qw(acpr_prtpr status);
-
+push @EXPORT_OK, qw(@company_testobject_indicator @person_testobject_indicator);
 
 # Associated fields for organization numbers
 our %orgnum_name = (
@@ -83,6 +94,7 @@ our %pnr_name = (
     actx_tax01 => "pnr",
     actx_tax02 => "pnr",
 );
+push @EXPORT_OK, qw(%orgnum_name %pnr_name);
 
 # Internal relations
 # These are also fetched based on the relation defined
@@ -93,7 +105,7 @@ our @int_relations = (
     #[ { acib_acitarn => "arn_dunsnr_num" }, { acgd_empfun01 => "dunsnr"  } ],
     [ { acib_acitnon => "non_sni_kod" }, { acxx_bnycktal => "snikod"  } ],
 );
-
+push @EXPORT_OK, qw(@int_relations);
 
 # Creates a list of the tables to export to mainframe
 our $export_tables = sub {
@@ -113,6 +125,7 @@ our $export_tables = sub {
     delete $tables{nyckeltal};
     return keys %tables;
 };
+push @EXPORT_OK, qw($export_tables);
 
 our @test_persons = qw(
     1010101010
@@ -200,10 +213,14 @@ our @test_businesses = qw(
     7164116464
 );
 
+push @EXPORT_OK, qw(@test_persons @test_businesses);
+
 
 our %tables_to_roll = ( actx_ftax =>  [ "ar_sek_tax_from", "tr_datum" ],
                     actx_tax01 => [ "inkar" ],
                     actx_tax02 => [ "inkar" ],
                     acib_acitboa => [ "boa_slut_per", "boa_trans_dat" ],
 );
+push @EXPORT_OK, qw(%tables_to_roll);
 
+1;

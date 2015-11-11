@@ -154,6 +154,7 @@ Export all tables to text format and ftp to mainframe.
 
 =cut
 
+use strict;
 use DBI;
 use Getopt::Std;
 use Net::FTP;
@@ -161,21 +162,19 @@ use feature 'unicode_strings';
 
 use export::TextExporter;
 
-# Configuration variables
-use tdms;
-
+our %opts;
 getopts("cdeflmrstvx", \%opts);
-$count = 1 if $opts{c};
-$examples = 1 if $opts{x};
-$export = 1 if $opts{e};
-$localdb = 1 if $opts{l};
-$metadata = 1 if $opts{m};
-$roll_dates = 1 if $opts{r};
-$show = 1 if $opts{s};
-$timestamps = 1 if $opts{t};
-$transfer = 1 if $opts{f};
-$truncate = 1 if $opts{d};
-$verbose = 1 if $opts{v};
+our $count = 1 if $opts{c};
+our $examples = 1 if $opts{x};
+our $export = 1 if $opts{e};
+our $localdb = 1 if $opts{l};
+our $metadata = 1 if $opts{m};
+our $roll_dates = 1 if $opts{r};
+our $show = 1 if $opts{s};
+our $timestamps = 1 if $opts{t};
+our $transfer = 1 if $opts{f};
+our $truncate = 1 if $opts{d};
+our $verbose = 1 if $opts{v};
 
 if ($#{[ keys %opts ]} < 0) {
     print "Need some argument!\n";
@@ -257,7 +256,7 @@ sub trace_print {
 #    "SQL_SS_TIME2",-154,
 #    "SQL_SS_TIMESTAMPOFFSET",-155
 #};
-%types = (
+our %types = (
     1 => "SQL_CHAR",
     2 => "SQL_NUMERIC",
     3 => "SQL_DECIMAL",
@@ -286,7 +285,9 @@ sub trace_print {
 );
 
 
-
+use tdms_conf qw($local_db $local_host $local_dbport $local_dbuid $local_dbpwd);
+use tdms_conf qw($remote_db $remote_host $remote_dbport $remote_dbuid $remote_dbpwd);
+our ($dbh_local, $dbh_rdb);
 $dbh_local = DBI->connect("dbi:Pg:dbname='$local_db';
                           host='$local_host';
                           port='$local_dbport'",
@@ -307,7 +308,7 @@ unless ($localdb) {
     $dbh_rdb->{pg_enable_utf8} = 1;
 }
 
-
+our $tabsth;
 unless ($localdb) {
     ### Create a new statement handle to fetch table information
     $tabsth = $dbh_rdb->table_info();
@@ -334,7 +335,8 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
         print "=================\n";
         print "$table\n";
     }
-
+    
+    our $sth;
     SWITCH: {
         $metadata && do {
             my $dbh = $localdb ? $dbh_local : $dbh_rdb;
@@ -424,6 +426,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $export && do {
+            use tdms_conf qw($export_tables $export_dir);
             last SWITCH unless grep /$name$/, &{$export_tables} ;
             my $dbh = $localdb ? $dbh_local : $dbh_rdb;
             my $statement = "SELECT count(*) FROM $table";
@@ -454,6 +457,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                         open my $fh, "<", "$export_dir/$filename";
                         my $lrecl = $exporter->row_len;
                         #trace_print ":: $lrecl\n";
+                        use tdms_conf qw($mainframe_ip $mainframe_uid $mainframe_pwd);
                         my $ftp = new Net::FTP($mainframe_ip, Debug => 0) or die "Can't connect to $mainframe_ip: $@";
                         $ftp->login($mainframe_uid, $mainframe_pwd) or die "Can't login to $mainframe_ip:", $ftp->message;
                         $ftp->cwd("..");
@@ -492,6 +496,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $roll_dates && do {
+            use tdms_conf qw(%tables_to_roll);
             # trace_print "Now on $name: matched:  @{[ grep /$name/, keys %tables_to_roll ]}\n";
             if (grep /$name/, keys %tables_to_roll) {
                 # Primary keys
