@@ -11,9 +11,9 @@ sub new() {
     my @layouts = $class->layouts;
     my @layout = grep /$table_name$/, @layouts;
     eval "use $layout[0]";
-    no strict 'refs';
+    #no strict 'refs';
     my $self = $table_name->new;
-    use strict 'refs';
+    #use strict 'refs';
     return $self;
 }
 

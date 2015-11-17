@@ -1,14 +1,14 @@
 package tdms_conf;
 
 use strict;
-use vars qw(@ISA @EXPORT);
-@ISA=qw(Exporter);
+use vars qw(@ISA @EXPORT_OK);
+our @ISA=qw(Exporter);
 our @EXPORT_OK = ();
 
 # Postgresql connection settings
 # For local DB
 our $local_db = "DB2REP";
-our $local_host = "172.17.0.128";
+our $local_host = "172.17.0.2";
 #our $local_host = "127.0.0.1";
 our $local_dbport = "5432";
 our $local_dbuid = "db2moto";
@@ -45,7 +45,8 @@ push @EXPORT_OK, qw(@company_entry @person_entry);
 # Test object indicators
 our @company_testobject_indicator = qw(acib_acitftg ftg_istatus_kod);
 our @person_testobject_indicator = qw(acpr_prtpr status);
-push @EXPORT_OK, qw(@company_testobject_indicator @person_testobject_indicator);
+our $testobject_tag = "#TOBJ#";
+push @EXPORT_OK, qw(@company_testobject_indicator @person_testobject_indicator $testobject_tag);
 
 # Associated fields for organization numbers
 our %orgnum_name = (

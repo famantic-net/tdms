@@ -3,6 +3,7 @@ package BusinessName;
 use strict;
 use feature 'unicode_strings';
 
+use tdms_conf qw($testobject_tag);
 use anon::LegalEntity;
 use anon::AnonymizedFields;
 
@@ -48,7 +49,7 @@ sub anonymizeBusinessName {
         elsif ($real_name =~ m/\bHB\b/) {
             $anon_name .= " HB";
         }
-        $anonymized{$name_id}{full} = "#TOBJ# $anon_name";
+        $anonymized{$name_id}{full} = $testobject_tag . " $anon_name";
     }
     return substr(sprintf("%- ${name_field_len}s", $anonymized{$name_id}{full}), 0, $name_field_len); # In case the new name is too long
 }

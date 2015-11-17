@@ -3,6 +3,7 @@ package PersonName;
 use strict;
 use feature 'unicode_strings';
 
+use tdms_conf qw($testobject_tag);
 use anon::LegalEntity;
 use anon::AnonymizedFields;
 use anon::SurNames;
@@ -56,7 +57,7 @@ sub anonymizeGivenName {
     unless ($anonymized{$real_name}) {
         @given_names = @{GivenNames->new} unless $#given_names > -1;
         my $grand = int(rand($#given_names+1));
-        $anonymized{$real_name} = uc("$given_names[$grand] #TOBJ#");
+        $anonymized{$real_name} = uc("$given_names[$grand] " . $testobject_tag);
     }
     #print "Anon: $anonymized{$real_name}\n";
     return sprintf "%- ${name_field_len}s", $anonymized{$real_name};
