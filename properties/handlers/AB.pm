@@ -6,7 +6,7 @@ use strict;
 our %AB = ( statement => qq(
     SELECT * FROM acib_acitftg
         WHERE ftg_iklass_kod LIKE '%49'
-        ORDER BY RANDOM()
+        ORDER BY random()
         LIMIT #size#
 ));
 
