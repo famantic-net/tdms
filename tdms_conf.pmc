@@ -103,7 +103,8 @@ push @EXPORT_OK, qw(%orgnum_name %pnr_name);
 # the 'table1,column1->table2,column2' relation
 our @int_relations = (
     [ { acib_acitarn => "arn_arbnr_num" }, { acib_acitnoe => "noe_enhnr_num"  } ],
-    #[ { acib_acitarn => "arn_dunsnr_num" }, { acgd_empfun01 => "dunsnr"  } ],
+    [ { acib_acitftg => "orgnr" }, { acin_intr20 => "pnr"  } ],
+    [ { acib_acitftg => "orgnr" }, { acin_intr40 => "pnr"  } ],
     [ { acib_acitnon => "non_sni_kod" }, { acxx_bnycktal => "snikod"  } ],
 );
 push @EXPORT_OK, qw(@int_relations);
