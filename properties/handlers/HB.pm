@@ -4,22 +4,22 @@ package HB;
 use strict;
 
 our %HB = (
-        hb_statement => qq(
-            SELECT * FROM acib_acitftg
-                WHERE ftg_iklass_kod LIKE '%31'
-                ORDER BY random()
-                LIMIT #size#
-        ),
         substatements => {
+            hb_statement => qq(
+                SELECT * FROM acin_intr20
+                        WHERE (priokod='48' OR priokod='50') AND ftgtyp='HB'
+                        ORDER BY random()
+                        LIMIT #size#
+            ),
             hbab_statement => qq(
                 SELECT * FROM acin_intr20
-                        WHERE priokod='50' AND ftgtyp='HB' AND ityp='AB'
+                        WHERE (priokod='48' OR priokod='50') AND ftgtyp='HB' AND ityp='AB'
                         ORDER BY random()
                         LIMIT #size#
             ),
             hbpp_statement => qq(
                 SELECT * FROM acin_intr20
-                        WHERE priokod='50' AND ftgtyp='HB' AND ityp='PP'
+                        WHERE (priokod='48' OR priokod='50') AND ftgtyp='HB' AND ityp='PP'
                         ORDER BY random()
                         LIMIT #size#
             ),
@@ -36,13 +36,9 @@ sub new() {
 sub collect_data {
     my $self = shift;
     my $dbargs = shift;
-    my $statement = $self->hb_statement;
     my $dbh = $dbargs->dbh;
     my $init_size = $dbargs->init_size;
-    $statement =~ s/#size#/$init_size/;
-    my $sth = eval { $dbh->prepare( $statement ) };
-    $sth->execute;
-    my @acitftg_set = @ { $sth->fetchall_arrayref };
+    my $sth;
     my @sub_set;
     my %substatements = %{ $self->substatements };
     for my $sub (keys %substatements) {
@@ -64,9 +60,10 @@ sub collect_data {
     for my $row (@sub_set) {
         $business{$$row[&{$field_num}("orgnr")]}++;
     }
+    my @acitftg_set;
     for my $orgnum ( keys %business ) {
-        $statement = "SELECT * FROM acib_acitftg WHERE ftg_org_num='$orgnum'";
-        my $sth = eval { $dbh->prepare( $statement ) };
+        my $statement = "SELECT * FROM acib_acitftg WHERE ftg_org_num='$orgnum'";
+        $sth = eval { $dbh->prepare( $statement ) };
         $sth->execute;
         push @acitftg_set, @{ $sth->fetchall_arrayref };
     }
