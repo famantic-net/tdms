@@ -1,14 +1,18 @@
 package AB;
-# Collects all swedish companies of type aktiebolag
+# Collects all swedish bsinesses of type aktiebolag
 
 use strict;
 
-our %AB = ( statement => qq(
-    SELECT * FROM acib_acitftg
-        WHERE ftg_iklass_kod LIKE '%49'
-        ORDER BY random()
-        LIMIT #size#
-));
+our @ISA = qw(Property);
+
+our %AB = (
+        statement => q(
+            SELECT * FROM acib_acitftg
+                WHERE ftg_iklass_kod LIKE '%49'
+                ORDER BY random()
+                LIMIT #size#
+        )
+);
 
 
 sub new() {

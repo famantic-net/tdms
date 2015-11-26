@@ -3,7 +3,11 @@ package Collector;
 
 use strict;
 
-use Module::Pluggable search_path => [ 'properties::handlers' ], require => 1, sub_name => 'handlers';
+use properties::Property;
+use Module::Pluggable   search_path => [ 'properties::handlers' ],
+                        except => qr/properties::handlers::disable::[^.]*/,
+                        require => 1,
+                        sub_name => 'handlers';
 
 sub get_testobjects {
     my $class = shift;

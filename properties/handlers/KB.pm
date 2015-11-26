@@ -1,24 +1,26 @@
 package KB;
-# Collects all swedish companies of type aktiebolag
+# Collects all swedish businesses of type 
 
 use strict;
+
+our @ISA = qw(Property);
 
 # Note> KB only differs from HB in field 'priokod'
 our %KB = (
         substatements => {
-            kb_statement => qq(
+            kb_statement => q(
                 SELECT * FROM acin_intr20
                         WHERE (priokod='60' OR priokod='68' OR priokod='70') AND ftgtyp='HB'
                         ORDER BY random()
                         LIMIT #size#
             ),
-            kbab_statement => qq(
+            kbab_statement => q(
                 SELECT * FROM acin_intr20
                         WHERE (priokod='60' OR priokod='68' OR priokod='70') AND ftgtyp='HB' AND ityp='AB'
                         ORDER BY random()
                         LIMIT #size#
             ),
-            kbpp_statement => qq(
+            kbpp_statement => q(
                 SELECT * FROM acin_intr20
                         WHERE (priokod='60' OR priokod='68' OR priokod='70') AND ftgtyp='HB' AND ityp='PP'
                         ORDER BY random()
@@ -50,25 +52,10 @@ sub collect_data {
         push @sub_set, @{ $sth->fetchall_arrayref };
     }
     my %business;
-    # To find the column that contains the key
-    my $field_num = sub {
-        my $field = shift;
-        #print "Field     : $field\n";
-        for ( my $i = 0 ; $i < $sth->{NUM_OF_FIELDS} ; $i++ ) {
-            return $i if $sth->{NAME}->[$i] eq $field; 
-        }
-    };
     for my $row (@sub_set) {
-        $business{$$row[&{$field_num}("orgnr")]}++;
+        $business{$$row[$self->field_num($sth, "orgnr")]}++;
     }
-    my @acitftg_set;
-    for my $orgnum ( keys %business ) {
-        my $statement = "SELECT * FROM acib_acitftg WHERE ftg_org_num='$orgnum'";
-        $sth = eval { $dbh->prepare( $statement ) };
-        $sth->execute;
-        push @acitftg_set, @{ $sth->fetchall_arrayref };
-    }
-    return \@acitftg_set;
+    return $self->get_ftg($dbh, \%business);
 }
 
 

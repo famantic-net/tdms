@@ -1,28 +1,30 @@
-package HB;
-# Collects all swedish businesses of type 
+package Forening;
 
 use strict;
 
+use properties::Idrotter;
 
 our @ISA = qw(Property);
 
-our %HB = (
+our %Forening = (
         substatements => {
-            hb_statement => q(
-                SELECT * FROM acin_intr20
-                        WHERE (priokod='48' OR priokod='50') AND ftgtyp='HB'
+            brf_statement => q(
+                SELECT * FROM acib_acitftg
+                        WHERE ftg_iklass_kod LIKE '%53'
                         ORDER BY random()
                         LIMIT #size#
             ),
-            hbab_statement => q(
-                SELECT * FROM acin_intr20
-                        WHERE (priokod='48' OR priokod='50') AND ftgtyp='HB' AND ityp='AB'
+            ek_statement => q(
+                SELECT * FROM acib_acitftg
+                        WHERE ftg_iklass_kod LIKE '%51'
                         ORDER BY random()
                         LIMIT #size#
             ),
-            hbpp_statement => q(
-                SELECT * FROM acin_intr20
-                        WHERE (priokod='48' OR priokod='50') AND ftgtyp='HB' AND ityp='PP'
+            idrott_statement => q(
+                SELECT * FROM acib_acitftg
+                        WHERE (ftg_iklass_kod LIKE '%61' OR ftg_iklass_kod LIKE '%51')
+                        AND
+                        (ftg_iregnamn LIKE '%#sport#%')
                         ORDER BY random()
                         LIMIT #size#
             ),
@@ -42,20 +44,33 @@ sub collect_data {
     my $dbh = $dbargs->dbh;
     my $init_size = $dbargs->init_size;
     my $sth;
-    my @sub_set;
+    my @result_set;
     my %substatements = %{ $self->substatements };
     for my $sub (keys %substatements) {
         my $statement = $substatements{$sub};
         $statement =~ s/#size#/$init_size/;
+        my $sub_condition;
+        if ($statement =~ m/\((ftg_iregnamn[^#]+#sport#[^)]+)\)/) {
+            $sub_condition = $1;
+        }
+        if ($sub =~ m/idrott/) {
+            my @idrotter = @{Idrotter->new};
+            my $condition;
+            for my $sport (@idrotter) {
+                my $cond = $sub_condition;
+                $cond =~ s/#sport#/$sport/;
+                $condition .= "$cond OR ";
+            }
+            $condition =~ s/ OR $//;
+            $statement =~ s/$sub_condition/$condition/;
+            #print $statement;
+        }
+        
         $sth = eval { $dbh->prepare( $statement ) };
         $sth->execute;
-        push @sub_set, @{ $sth->fetchall_arrayref };
+        push @result_set, @{ $sth->fetchall_arrayref };
     }
-    my %business;
-    for my $row (@sub_set) {
-        $business{$$row[$self->field_num($sth, "orgnr")]}++;
-    }
-    return $self->get_ftg($dbh, \%business);
+    return \@result_set;
 }
 
 

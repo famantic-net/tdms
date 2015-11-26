@@ -1,14 +1,18 @@
 package Rating;
-# Collects all swedish companies of type aktiebolag
+# Collects all swedish businesses of type 
 
 use strict;
 
-our %Rating = ( statement => qq(
-    SELECT * FROM acba_rating
-        WHERE rattext='#rattext#'
-        ORDER BY random()
-        LIMIT #size#
-));
+our @ISA = qw(Property);
+
+our %Rating = (
+            statement => q(
+                SELECT * FROM acba_rating
+                    WHERE rattext='#rattext#'
+                    ORDER BY random()
+                    LIMIT #size#
+            )
+);
 
 our @rattext = qw(A AA AAA B C NYTT EJ);
 
@@ -35,26 +39,11 @@ sub collect_data {
         push @rating_set, @{ $sth->fetchall_arrayref };
         $statement =~ s/'$rattext'/'#rattext#'/;
     }
-    # To find the column that contains the key
-    my $field_num = sub {
-        my $field = shift;
-        #print "Field     : $field\n";
-        for ( my $i = 0 ; $i < $sth->{NUM_OF_FIELDS} ; $i++ ) {
-            return $i if $sth->{NAME}->[$i] eq $field; 
-        }
-    };
-    my %rated_business;
+    my %business;
     for my $row (@rating_set) {
-        $rated_business{$$row[&{$field_num}("orgnr")]}++;
+        $business{$$row[$self->field_num($sth, "orgnr")]}++;
     }
-    my @acitftg_set;
-    for my $orgnum ( keys %rated_business ) {
-        $statement = "SELECT * FROM acib_acitftg WHERE ftg_org_num='$orgnum'";
-        $sth = eval { $dbh->prepare( $statement ) };
-        $sth->execute;
-        push @acitftg_set, @{ $sth->fetchall_arrayref };
-    }
-    return \@acitftg_set;
+    return $self->get_ftg($dbh, \%business);
 }
 
 
