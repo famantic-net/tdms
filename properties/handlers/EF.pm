@@ -47,10 +47,10 @@ sub collect_data {
         my @sub_set = @{ $sth->fetchall_arrayref };
         my %business;
         for my $row (@sub_set) {
-            $business{$$row[$self->field_num($sth, "orgnr")]}++;
+            $business{$$row[$self->_field_num($sth, "orgnr")]}++;
         }
         #print "EF: @{[ keys %business ]}\n";
-        push @with_nf, @{ $self->get_ftg($dbh, \%business) };
+        push @with_nf, @{ $self->_get_ftg($dbh, \%business) };
         # Objects in acra_rapp are often already deleted from acib_aciftg, so repeat until full set
     } until $#with_nf >= $init_size;
     push @businesses, @with_nf;

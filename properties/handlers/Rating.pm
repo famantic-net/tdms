@@ -41,9 +41,9 @@ sub collect_data {
     }
     my %business;
     for my $row (@rating_set) {
-        $business{$$row[$self->field_num($sth, "orgnr")]}++;
+        $business{$$row[$self->_field_num($sth, "orgnr")]}++;
     }
-    return $self->get_ftg($dbh, \%business);
+    return $self->_get_ftg($dbh, \%business);
 }
 
 

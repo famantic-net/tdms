@@ -1,14 +1,14 @@
-package AB;
-# Collects all swedish bsinesses of type aktiebolag
+package Stiftelse;
+# Collects all swedish bsinesses of type 
 
 use strict;
 
 our @ISA = qw(Property);
 
-our %AB = (
+our %Stiftelse = (
         statement => q(
             SELECT * FROM acib_acitftg
-                WHERE ftg_iklass_kod LIKE '%49'
+                WHERE ftg_iklass_kod LIKE '%72'
                 ORDER BY random()
                 LIMIT #size#
         )
