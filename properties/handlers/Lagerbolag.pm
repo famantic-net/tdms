@@ -1,16 +1,16 @@
-package AB;
-# Collects all swedish bsinesses of type aktiebolag
+package Lagerbolag;
+# Collects all swedish bsinesses of type 
 
 use strict;
 
 our @ISA = qw(Property);
 
-our %AB = (
+our %Lagerbolag = (
         statement => q(
             SELECT * FROM acib_acitftg
-                WHERE ftg_iklass_kod LIKE '%49' AND NOT ftg_lagbol_mrk='X'
-                ORDER BY random()
-                LIMIT #size#
+                    WHERE ftg_lagbol_mrk='X'
+                    ORDER BY random()
+                    LIMIT #size#
         )
 );
 
