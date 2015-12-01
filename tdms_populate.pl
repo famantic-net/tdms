@@ -83,8 +83,9 @@ use properties::Collector;
 use anon::Anonymize;
 
 our %opts;
-getopts("asv", \%opts);
+getopts("apsv", \%opts);
 our $anonymize = 1 if $opts{a};
+our $properties = 1 if $opts{p};
 our $specific = 1 if $opts{s};
 our $verbose = 1 if $opts{v};
 
@@ -236,12 +237,14 @@ sub populate {
         use tdms_conf qw($init_size);
         my $rs_delta = 0;
         do {
-            my $dbargs = new DBargs($dbh_rdb, $entry_tuple[0], $init_size);
-            Collector->get_testobjects($dbargs);
-            exit;
-            #$statement = "SELECT * FROM $entry_tuple[0] order by random() limit " . ($init_size - $rs_delta);
+            if ($properties) {
+                my $dbargs = new DBargs($dbh_rdb, $entry_tuple[0], $init_size);
+                Collector->get_testobjects($dbargs);
+                exit;
+            }
+            $statement = "SELECT * FROM $entry_tuple[0] order by random() limit " . ($init_size - $rs_delta);
             # Get the table metadata
-            $statement = "SELECT * FROM $entry_tuple[0] order limit 0";
+            #$statement = "SELECT * FROM $entry_tuple[0] limit 0";
             $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
             $sth_rdb->execute();
             $result_ref = $sth_rdb->fetchall_arrayref;
