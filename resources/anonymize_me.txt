@@ -1,0 +1,220 @@
+acba_ratindik
+[0]<orgnr>5568326150
+>
+acba_rating
+[0]<orgnr>5568326150
+>
+acba_scoring2
+[0]<orgnr>5568326150
+>
+acdt_dttph
+[0]<org_num>5567211924
+[1]<dobnr_num>775463131
+>
+acdt_dttpv
+[0]<org_num>5567211924
+[1]<dobnr_num>775463131
+>
+acgd_empfun01
+[0]<dunsnr>509000662
+[2]<orgnr>5566391586
+[6]<firstname>Hans                                    
+[7]<lastname>Hultberg                                
+>
+acgd_organi01
+[0]<dunsnr>632912742
+[2]<orgnr>5566080122
+>
+acib_acitaga
+[0]<aga_org_num>5164055310
+>
+acib_acitarn
+[1]<arn_dunsnr_num>350036899
+[2]<arn_org_num>5164055310
+[8]<arn_badr>LÖVSKÄRSVÄGEN 708           
+[9]<arn_bpost_num>97455
+[10]<arn_bport>LULEÅ                    
+[11]<arn_padr>LÖVSKÄRSVÄGEN 708           
+[12]<arn_ppost_num>97455
+[13]<arn_pport>LULEÅ                    
+>
+acib_acitbif
+[0]<bif_org_num>5566846977
+[4]<bif_iregnamn>Flying Pencils                                  
+[5]<bif_namn1>Flying Pencils                      
+>
+acib_acitbiv
+[0]<biv_org_num>5566846977
+>
+acib_acitboa
+[0]<boa_org_num>5568326150
+>
+acib_acitefi
+[0]<efi_org_num>4411040183
+[3]<efi_iregnamn>Applique                                        
+[5]<efi_namn1>Applique                            
+[6]<efi_namn2>                                    
+[7]<efi_iadr>ÖSTRA HENRIKSBORGSVÄGEN 47      
+[8]<efi_coadr>                                                  
+[10]<efi_ipost_num>13131
+[11]<efi_iport>NACKA                           
+[12]<efi_kommun>82
+[13]<efi_lan>1
+>
+acib_acitft2
+[0]<ft2_org_num>5569649527
+[19]<ft2_presnamn>                                                            
+[20]<ft2_co_adress>C/O SUSANNE TILLMAN                               
+>
+acib_acitft3
+[0]<ft3_org_num>5164055310
+>
+acib_acitftg
+[0]<ftg_org_num>5164055310
+[1]<ftg_namn1>Levain Film Development Ltd UK      
+[2]<ftg_namn2>Filial                              
+[3]<ftg_iadr>LÖVSKÄRSVÄGEN 708           
+[4]<ftg_ipost_num>97455
+[5]<ftg_iport>LULEÅ                    
+[6]<ftg_land_kod>SE
+[18]<ftg_iregnamn>Levain Film Development Ltd UK Filial           
+[49]<ftg_namn1_nrm>LEVAJNFILMDEVEL
+>
+acib_acitgaf
+[0]<gaf_org_num>5568326150
+[1]<gaf_namn1>Snoka Mediakonsult AB               
+[2]<gaf_namn2>                                    
+[3]<gaf_iadr>BOX 1067                    
+[4]<gaf_ipost_num>22104
+[5]<gaf_iport>LUND                     
+[6]<gaf_rikt_num>0
+[7]<gaf_abon_num>0
+[15]<gaf_namn1_nrm>SNOKAMEDIAKONSU
+>
+acib_acitkcn
+[0]<kcn_id_num>5565760286
+[3]<kcn_modr_num>5565760286
+[4]<kcn_dottr_num>5565927190
+[13]<kcn_landkod>SE
+[14]<kcn_dobnr>632227570
+[15]<kcn_namn>                                
+>
+acib_acitmin
+[0]<min_id_num>5568069669
+[3]<min_modr_num>5568069669
+[4]<min_dottr_num>5568040017
+[13]<min_landkod>SE
+[14]<min_dobnr>0
+[15]<min_namn>                                
+>
+acib_acitnon
+[0]<non_org_num>5164055310
+>
+acib_acitntf
+[0]<ntf_org_num>5566080122
+>
+acib_acitoms
+[0]<oms_org_num>5164055310
+[3]<oms_org12_num>165164055310
+>
+acib_acitver
+[0]<ver_org_num>5568326150
+[3]<ver_verks>Bolaget ska äga och förvalta fast och lös egendom och därmed          
+>
+acin_intr10
+[0]<orgnr>5568326150
+>
+acin_intr20
+[1]<pnr>7905053539
+[3]<orgnr>5568326150
+[6]<namn>SVENSSON, NILS HENRIK KRISTOFFER    
+>
+acin_intr30
+[0]<orgnr>5568326150
+>
+acin_intr40
+[1]<pnr>6508061915
+[3]<orgnr>5568326150
+[6]<namn>HALL, THOMAS KARL-JACOB             
+[20]<namnas>SNOKA MEDIAKONSULT AB                           
+>
+acpr_prtpr
+[0]<pnr>4603253248
+[1]<pnr12>194603253248
+[4]<namn>JOHANSSON, BIRGITTA INGEGÄRD        
+[12]<sp_coadress>                                   
+[13]<sp_foadress>                                   
+[14]<sp_gatuadress>                                   
+[15]<sp_postnr>     
+[16]<sp_postort>                           
+[17]<utl_landkod>    
+[18]<utl_postkod>         
+[19]<utl_postort>                           
+[20]<utl_land>                                   
+[21]<mnamn>                                        
+[22]<enamn>JOHANSSON                                                   
+[23]<fnamn>BIRGITTA INGEGÄRD                                                               
+[24]<fbf_coadress>                                   
+[25]<fbf_foadress>                                   
+[26]<fbf_gatuadress>LAGMANSGATAN 35 B LGH 1101         
+[27]<fbf_postnr>59552
+[28]<fbf_postort>MJÖLBY                     
+[31]<rel_pnr>195310282495
+>
+acpr_prtprh
+[0]<pnr>4510052154
+[1]<pnr12>194510052154
+[5]<namn>PETTERSSON, ULF CHRISTER            
+[13]<sp_coadress>
+[14]<sp_foadress>
+[15]<sp_gatuadress>
+[16]<sp_postnr>     
+[17]<sp_postort>
+[18]<utl_landkod>    
+[19]<utl_postkod>         
+[20]<utl_postort>
+[21]<utl_land>
+[22]<mnamn>
+[23]<enamn>PETTERSSON
+[24]<fnamn>ULF CHRISTER
+[25]<fbf_coadress>
+[26]<fbf_foadress>
+[27]<fbf_gatuadress>LILLA LJUNA VÅRBACKA
+[28]<fbf_postnr>59593
+[29]<fbf_postort>MJÖLBY
+[32]<rel_pnr>0
+>
+acra_klient
+[0]<orgnr>5568161441
+>
+acra_rapp
+[0]<orgnr>5164055310
+>
+acra_ratssa
+[0]<orgnr12>165568161441
+[1]<orgnr>5568161441
+>
+acra_ratssah
+[0]<orgnr12>165568161441
+[1]<orgnr>5568161441
+>
+acra_uphi
+[0]<orgnr>5566080122
+>
+actx_ftax
+[0]<orgnr>4411040183
+>
+actx_tax01
+[0]<pnr>4603253248
+[51]<pnr12>194603253248
+>
+actx_tax02
+[0]<pnr>4603253248
+[51]<pnr12>194603253248
+>
+nsdb_sync
+[0]<ftg_org_num>5164055310
+>
+nyckeltal
+[0]<org_num>5568326150
+>

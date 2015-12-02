@@ -1,0 +1,347 @@
+Akademisk Idrott
+Amerikansk Fotboll
+Badminton
+Bandy
+Bangolf
+Baseboll och Softboll
+Basket
+Biljard
+Bilsport
+Bob och Rodel
+Bordtennis
+Boule
+Bowling
+Boxning
+Brottning
+Brottning - Armsport
+Budo och Kampsport
+Budo och Kampsport - Aikido
+Budo och Kampsport - Brasiliansk Jiu-Jitsu
+Budo och Kampsport - Bujinkan
+Budo och Kampsport - Capoeira
+Budo och Kampsport - Filippinska Kamparter
+Budo och Kampsport - Glima
+Budo och Kampsport - HEMA
+Budo och Kampsport - Iaido
+Budo och Kampsport - Jodo
+Budo och Kampsport - Ju Jutsu
+Budo och Kampsport - Kendo
+Budo och Kampsport - Kickboxning
+Budo och Kampsport - Krav Maga
+Budo och Kampsport - Kyokushin
+Budo och Kampsport - Kyudo
+Budo och Kampsport - Mixed Martial Arts
+Budo och Kampsport - Muaythai - Thaiboxning
+Budo och Kampsport - Naginata
+Budo och Kampsport - Sambo
+Budo och Kampsport - Savate
+Budo och Kampsport - Shootfighting
+Budo och Kampsport - Shorinjikempo
+Budo och Kampsport - Submission Wrestling
+Budo och Kampsport - Sumo
+Budo och Kampsport - Systema
+Budo och Kampsport - Taido
+Budo och Kampsport - Wushu
+Bågskytte
+Bågskytte - 3D
+Bågskytte - Fält
+Bågskytte - Svensk Jakt
+Bågskytte - Tavla inne
+Bågskytte - Tavla ute
+Casting
+Cricket
+Curling
+Curling - Rullstolscurlare
+Cykel
+Danssport
+Danssport - BRR
+Danssport - Drill
+Danssport - Linedance
+Danssport - TIO
+Dart
+Draghundsport
+Dragkamp
+Dövidrott
+Flygsport
+Flygsport - Ballongflyg
+Flygsport - Fallskärmshoppning
+Flygsport - Hängflyg
+Flygsport - Konstflyg
+Flygsport - Modellflyg
+Flygsport - Motorflyg
+Flygsport - Segelflyg
+Flygsport - Skärmflyg
+Fotboll
+Friidrott
+Frisbee
+Fäktning
+Golf
+Gymnastik
+Gymnastik - Aerobic Gymnastics
+Gymnastik - Bamsegympa
+Gymnastik - Bamsegympa
+Gymnastik - Barngymnastik upp till 6 år
+Gymnastik - Cheerleading
+Gymnastik - Drill
+Gymnastik - Familjegymnastik
+Gymnastik - Gymmix/Gruppträning
+Gymnastik - Gymmix/Seniorträning över 65 år
+Gymnastik - Gympa Kidz/Barngymnastik 7-12 år
+Gymnastik - Hopprep
+Gymnastik - Kvinnlig Artistisk Gymnastik
+Gymnastik - Manlig Artistisk Gymnastik
+Gymnastik - Rytmisk Gymnastik
+Gymnastik - Trampolin
+Gymnastik - Truppgymnastik
+Gymnastik - Ungdomsgymnastik 13-20 år
+Gång och Vandring
+Handboll
+IHR
+Innebandy
+Ishockey
+Islandshäst
+Issegling
+Judo
+Kanot
+Karate
+Klättring
+Konståkning
+Korpen
+Korpen - Aerobics
+Korpen - Afro
+Korpen - Badminton ( Korpen )
+Korpen - Bangolf (Korpen)
+Korpen - Basket ( Korpen )
+Korpen - Beachvolleyboll (Korpen)
+Korpen - BMX (Korpen)
+Korpen - Bordtennis ( Korpen )
+Korpen - Boule ( Korpen )
+Korpen - Bowling ( Korpen )
+Korpen - Box
+Korpen - Cirkelträning
+Korpen - Core (rygg/bål)
+Korpen - Curling (korpen)
+Korpen - Cykling
+Korpen - Dans
+Korpen - Five-a-side
+Korpen - Fotboll ( Korpen )
+Korpen - Fotboll (futsal, five a side)
+Korpen - Fotboll (Korpen)
+Korpen - Funktionell träning – EFIT
+Korpen - Futsal
+Korpen - Föräldrar och barn
+Korpen - Golf (Korpen)
+Korpen - Gym
+Korpen - Gympa
+Korpen - Handboll  (Korpen)
+Korpen - Handboll ( Korpen )
+Korpen - Hockeybockey (Korpen)
+Korpen - Innebandy  (Korpen)
+Korpen - Innebandy ( Korpen )
+Korpen - Ishockey ( Korpen )
+Korpen - Kägel
+Korpen - Löpning
+Korpen - Paddling (Korpen)
+Korpen - Pilates
+Korpen - Pump
+Korpen - Qi gong
+Korpen - Racketlon (Korpen)
+Korpen - Rinkbandy
+Korpen - Rinkbandy
+Korpen - Senioraktiviteter
+Korpen - Skateboard (Korpen)
+Korpen - Spinning
+Korpen - Squash ( Korpen )
+Korpen - Stavgång
+Korpen - Step
+Korpen - Streetdance
+Korpen - Tennis ( Korpen )
+Korpen - Tipspromenad
+Korpen - Varpa (Korpen)
+Korpen - Vattenträning
+Korpen - Volleyboll  (Korpen)
+Korpen - Yoga
+Korpen - Zumba / Latin moves
+Landhockey
+Motorcykel och Snöskoter
+Motorcykel och Snöskoter - Dragracing
+Motorcykel och Snöskoter - Enduro
+Motorcykel och Snöskoter - Flat Track
+Motorcykel och Snöskoter - Isracing
+Motorcykel och Snöskoter - Minimoto
+Motorcykel och Snöskoter - Motocross
+Motorcykel och Snöskoter - Roadracing
+Motorcykel och Snöskoter - Snöskoter
+Motorcykel och Snöskoter - Speedway
+Motorcykel och Snöskoter - Supermoto
+Motorcykel och Snöskoter - Trial
+Mångkamp
+Mångkamp - Militär femkamp
+Mångkamp - Modern femkamp
+Mångkamp - Modern Femkamp & Biathle
+Mångkamp - Orienteringsskytte
+Orientering
+Parasport
+Parasport - Alpint SHIF/SPK
+Parasport - Alpint SHIF/SPK 1
+Parasport - Boccia
+Parasport - Boccia SHIF/SPK
+Parasport - Bordtennis SHIF/SPK
+Parasport - Bänkpress SHIF/SPK
+Parasport - Elektronskytte SHIF/SPK
+Parasport - Elhockey
+Parasport - Fotboll SHIF/SPK
+Parasport - Friidrott SHIF/SPK
+Parasport - Goalball SHIF/SPK
+Parasport - Innebandy SHIF/SPK
+Parasport - Judo SHIF/SPK
+Parasport - Kälkhockey SHIF/SPK
+Parasport - Längdskidor/Skidskytte SHIF/SPK
+Parasport - Mattcurling SHIF/SPK
+Parasport - Rullstolsdans SHIF/SPK
+Parasport - Rullstolsrugby SHIF/SPK
+Parasport - Showdown SHIF/SPK
+Parasport - Simning SHIF/SPK
+Parasport - Sportskytte SHIF/SPK
+Parasport - Varpa SHIF/SPK
+Parasport - Volleyboll SHIF/SPK
+Racerbåt
+Ridsport
+Ridsport - Island
+Ridsport - Islandshäs
+RIG
+Ringette
+Ringette
+Rodd
+Rugby
+Segling
+Segling - 2.4mR
+Segling - 29er
+Segling - 420
+Segling - 470
+Segling - 5m
+Segling - 5o5
+Segling - 606
+Segling - 6mR
+Segling - Accent
+Segling - A-Kat
+Segling - Albin 78
+Segling - Ballad
+Segling - Beneteau
+Segling - Birdie
+Segling - C55
+Segling - Carerra
+Segling - Catamaran och trimaran
+Segling - CB66
+Segling - Comfort Comfortina
+Segling - Contrast
+Segling - Cumulus
+Segling - Diva
+Segling - Drake
+Segling - E-jolle
+Segling - Enmeter
+Segling - Express
+Segling - F18
+Segling - Farr 30
+Segling - Finnjolle
+Segling - Folkbåt
+Segling - Havskappsegling
+Segling - H-Båt
+Segling - Hobie Cat
+Segling - IF
+Segling - IRC
+Segling - IRC
+Segling - J/105
+Segling - J/70
+Segling - J/80
+Segling - J24
+Segling - Kite
+Segling - Kona One
+Segling - Koster
+Segling - Lady Hellsman
+Segling - Laser
+Segling - Linjett
+Segling - M32
+Segling - Marblehead
+Segling - Maxi 77
+Segling - Maxi 95
+Segling - Maxi Racer
+Segling - M-Båt
+Segling - Melges 24
+Segling - Mirror
+Segling - Moth
+Segling - Neptunkryssare
+Segling - NF
+Segling - Nordisk Kryssare
+Segling - Nova
+Segling - OK-Jolle
+Segling - Omega 42
+Segling - Optimist
+Segling - RB 111
+Segling - Rival 22
+Segling - RJ 85
+Segling - RS 200
+Segling - RS 500
+Segling - RS Feva
+Segling - RS Tera
+Segling - S 30
+Segling - Safir
+Segling - Scampi
+Segling - Scanner-Skanmar
+Segling - Seglng
+Segling - Shipman 28
+Segling - Skippi 650 C
+Segling - Skärgårdskryssare
+Segling - Smaragd
+Segling - Snipe
+Segling - Soling
+Segling - Starbåt
+Segling - Sveakryssare
+Segling - Tornado
+Segling - Triss
+Segling - Tvåkrona
+Segling - Vega
+Segling - Viggen
+Segling - Vindsurfing
+Segling - X-35
+Segling - X-35
+Segling - X99
+Segling - Yngling
+Segling - Zoom8
+Simidrott
+Skateboard
+Skidor
+Skidor - Alpint
+Skidor - arrangör region 3
+Skidor - Backhoppning
+Skidor - Freestyle
+Skidor - Längdåkning
+Skidor - Nordisk kombination
+Skidor - Rullskidor
+Skidor - Skicross
+Skidor - Skidorientering
+Skidor - Slopestyle
+Skidor - Snowboard
+Skidor - Speedski
+Skidor - Telemark
+Skidor - Ungdomsrådet
+Skidskytte
+Skolidrott
+Skridsko
+Skyttesport
+Skyttesport - Gevär
+Skyttesport - Lerduva
+Skyttesport - Pistol
+Skyttesport - Viltmål
+Sportdykning
+Sportdykning - fridykning
+Squash
+Styrkelyft
+Taekwondo
+Taekwondo - Hapkido
+Tennis
+Triathlon
+Tyngdlyftning
+Varpa
+Vattenskidor och Wakeboard
+Volleyboll

@@ -1,0 +1,8 @@
+# --- Anonymized business numbers ---
+# Display discarded businesses per JFR (and the amount)
+cat P065.RAPPPUTX.G002* | perl -nle 'print if /\d{6}-/'  | perl -nle '($orgnr, $klass) = m/(\d{6}-\d{4})\s+(\d+)/; push @{$klasshash{$klass}}, $orgnr; END {for my $key (sort keys %klasshash) {print qq(($#{$klasshash{$key}})\t$key => @{$klasshash{$key}})}}' | less -S
+
+# Create hash with the numbers in arrays
+cat P065.RAPPPUTX.G002* | perl -nle 'print if /\d{6}-/'  | perl -nle '($orgnr, $klass) = m/(\d{6}-\d{4})\s+(\d+)/; push @{$klasshash{$klass}}, $orgnr; END {for my $key (sort keys %klasshash) {print "$key =>\t["; for my $entry (@{$klasshash{$key}}) {print "\t\t$entry,"} print "\t]," }}'
+# ---
+
