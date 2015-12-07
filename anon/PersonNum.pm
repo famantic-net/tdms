@@ -8,13 +8,13 @@ use anon::AnonymizedFields;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
-our @test_list;
+#our @test_list;
 
 sub new() {
     my $class = shift;
     my $self = AnonymizedFields->pnum;
-    my $test_list= shift;
-    @test_list = @{$test_list};
+    #my $test_list= shift;
+    #@test_list = @{$test_list};
     return bless $self;
 }
 
@@ -42,13 +42,13 @@ sub anonymizePersonNumber {
             return $pnum; # Return what came in since it's not a normal Swedish person number
         }
         my $anon_number;
-        # Avoid creating a person number that clashes with the predefined testobjects
-        do {
+        ## Avoid creating a person number that clashes with the predefined testobjects
+        #do {
             my $month = sprintf "%02d", int(rand(12)) + 1;
             my $day = sprintf "%02d", int(rand(27)) + 1;
             my $ordinal = sprintf "%03d", int(rand(1000));
             $anon_number = $lead_dig . $month . $day . $ordinal . $self->_control_digit($lead_dig, $month, $day, $ordinal);
-        } while (grep /$anon_number/, @test_list);
+        #} while (grep /$anon_number/, @test_list);
         $anonymized{$pnum} = $anon_number;
     }
     return $anonymized{$pnum};

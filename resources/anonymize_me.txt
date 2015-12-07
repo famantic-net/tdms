@@ -23,12 +23,14 @@ acgd_empfun01
 >
 acgd_organi01
 [0]<dunsnr>632912742
+[1]<cfarnr>53295077
 [2]<orgnr>5566080122
 >
 acib_acitaga
 [0]<aga_org_num>5164055310
 >
 acib_acitarn
+[0]<arn_arbnr_num>36605772
 [1]<arn_dunsnr_num>350036899
 [2]<arn_org_num>5164055310
 [8]<arn_badr>LÖVSKÄRSVÄGEN 708           
@@ -119,7 +121,6 @@ acib_acitoms
 >
 acib_acitver
 [0]<ver_org_num>5568326150
-[3]<ver_verks>Bolaget ska äga och förvalta fast och lös egendom och därmed          
 >
 acin_intr10
 [0]<orgnr>5568326150

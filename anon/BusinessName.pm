@@ -43,6 +43,7 @@ sub anonymizeBusinessName {
             $anon_name .= $item_part . " ";
         }
         $anon_name =~ s/\s*$//; # Remove any trailing space
+        # TODO: Preserve more name attributes, e.g. KB, sport names
         if ($real_name =~ m/\bAB\b/) {
             $anon_name .= " AB";
         }

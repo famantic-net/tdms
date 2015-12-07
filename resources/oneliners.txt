@@ -2,7 +2,13 @@
 # Display discarded businesses per JFR (and the amount)
 cat P065.RAPPPUTX.G002* | perl -nle 'print if /\d{6}-/'  | perl -nle '($orgnr, $klass) = m/(\d{6}-\d{4})\s+(\d+)/; push @{$klasshash{$klass}}, $orgnr; END {for my $key (sort keys %klasshash) {print qq(($#{$klasshash{$key}})\t$key => @{$klasshash{$key}})}}' | less -S
 
-# Create hash with the numbers in arrays
+# Create hash with the discarded business numbers in arrays per JFR
 cat P065.RAPPPUTX.G002* | perl -nle 'print if /\d{6}-/'  | perl -nle '($orgnr, $klass) = m/(\d{6}-\d{4})\s+(\d+)/; push @{$klasshash{$klass}}, $orgnr; END {for my $key (sort keys %klasshash) {print "$key =>\t["; for my $entry (@{$klasshash{$key}}) {print "\t\t$entry,"} print "\t]," }}'
+
+# Display DUNS associated with only one ARN
+cat ACITHDU.txt | perl -nle 'print if /\d{8}/'  | perl -nle '($arn, $duns) = m/(\d{8})\s+(\d{9})/; push @{$dunshash{$duns}}, $arn; END {for my $key (sort keys %dunshash) {print "($#{$dunshash{$key}})\t$key => @{$dunshash{$key}}"}}' | grep '(0)' | less
+
+# Create hash with one discarded DUNS per ARN
+cat ACITHDU.txt | perl -nle 'print if /\d{8}/'  | perl -nle '($arn, $duns) = m/(\d{8})\s+(\d{9})/; push @{$dunshash{$duns}}, $arn; END {for my $key (sort keys %dunshash) {print qq(@{$dunshash{$key}} => "$key") if $#{$dunshash{$key}} == 0 }}'
 # ---
 

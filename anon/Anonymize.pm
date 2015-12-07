@@ -2,6 +2,7 @@ package Anonymize;
 
 use strict;
 use feature 'unicode_strings';
+use Time::HiRes qw(time);
 
 use anon::BusinessNum;
 use anon::BusinessName;
@@ -15,11 +16,15 @@ our $dbh_rdb;
 sub enact { # 
     my $invocant = shift;
     my $class = ref($invocant) || $invocant;
-    $dbh_rdb = shift;
-    #my ($target, $table, $sth, $row, $test_list) = @_;
-    my ($table, $tob_tuple_ref, $sth, $row, $testobject_list) = @_;
-    #print "Processing : $target\nHave table : $table\n";
-    #print "Received   : @{$row}\n";
+    my $row = shift;
+    my $anonparams = shift;
+    $dbh_rdb = $anonparams->dbh;
+    my $target = $anonparams->target;
+    my $table = $anonparams->entry_table;
+    my @tob_tuple = @{$anonparams->tob_tuple};
+    my $sth = $anonparams->sth;
+    my $JFR = $anonparams->JFR if defined $anonparams->JFR;
+
     # Find the column that contains the key
     my $field_num = sub {
         my $field = shift;
@@ -28,22 +33,22 @@ sub enact { #
             return $i if $sth->{NAME}->[$i] eq $field; 
         }
     };
+
     my $id; # Used to keep table fields consistent
     
     # Set status field to test object
-    if ($table =~ m/${$tob_tuple_ref}[0]/) {
-        ${$row}[&{$field_num}(${$tob_tuple_ref}[1])] = 4; # Testobject
+    if ($table =~ m/$tob_tuple[0]/) {
+        ${$row}[&{$field_num}($tob_tuple[1])] = 4; # Testobject
     }
 
-    { # Businesses
-        my $orgnum = new BusinessNum($testobject_list);
+    if ($target eq "organizations") { # Businesses
+        my $orgnum = new BusinessNum;
         if (grep /$table/, $orgnum->list_attr) {
             for my $field (@{$orgnum->fields($table)}) {
                 $id = ${$row}[&{$field_num}($field)];
-                ${$row}[&{$field_num}($field)] = $orgnum->anonymizeOrgNumber(${$row}[&{$field_num}($field)]);
+                ${$row}[&{$field_num}($field)] = $orgnum->anonymizeOrgNumber(${$row}[&{$field_num}($field)], $JFR);
             }
         }
-        
         my $orgname = new BusinessName($dbh_rdb, $id);
         if (grep /$table/, $orgname->list_attr("full")) {
             for my $field (@{$orgname->fields('full', $table)}) {
@@ -74,8 +79,8 @@ sub enact { #
         }
     }
     
-    { # Individuals
-        my $pnum = new PersonNum($testobject_list);
+    else { # Individuals
+        my $pnum = new PersonNum;
         if (grep /$table/, $pnum->list_attr) {
             for my $field (@{$pnum->fields($table)}) {
                 $id = ${$row}[&{$field_num}($field)];

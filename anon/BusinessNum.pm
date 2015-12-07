@@ -1,21 +1,40 @@
 package BusinessNum;
 
+=pod
+http://www.scb.se/statistik/AM/AM0302/_dokument/AM0302_DO_1999.pdf
+
+Dispensnummer eller ordinarie organisationsnummer
+
+Dispensnumret är ett särskilt redovisningsnummer som ett fåtal arbetsgivare
+blivit tilldelade av länsstyrelserna för att använda vid inbetalning av de
+anställdas skatter.
+
+Dispensnumret är uppbyggt på samma sätt som organisationsnumret och känns igen
+på att det alltid inleds med två 6:or. 
+
+Dispensnumret är tolvställigt och börjar på två 6:or.
+Om dispensnummer saknas anges ordinarie organisationsnummer.
+=cut
+
 use strict;
 use feature 'unicode_strings';
 
-use anon::LegalEntity;
 use anon::AnonymizedFields;
+use anon::LegalEntity;
+use anon::Discarded_bnums;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
-our @test_list;
-
+our @used_bnums = ();
+our $bnum_store = undef;
+our $max_tries = 1000;
 
 sub new() {
     my $class = shift;
     my $self = AnonymizedFields->orgnum;
-    my $test_list= shift;
-    @test_list = @{$test_list};
+    unless ($bnum_store) {
+        $bnum_store = new Discarded_bnums;
+    }
     return bless $self;
 }
 
@@ -24,26 +43,27 @@ sub new() {
 sub anonymizeOrgNumber { # $orgnum
     my $self = shift;
     my $orgnum = shift;
+    my $JFR= "JFR_" . shift;
     unless ($anonymized{$orgnum}) {
         my $lead_dig;
-        if (length $orgnum == 10 ) {
-            ($lead_dig) = $orgnum =~ m/^(\d)/;
+        if (length($orgnum) == 12) {
+            #($lead_dig) = $orgnum =~ m/^(\d\d)/;
+            $orgnum =~ s/^(\d\d)//;
+            $lead_dig = $1;
         }
-        elsif (length $orgnum == 12) {
-            ($lead_dig) = $orgnum =~ m/^(\d\d\d)/;
+        my @bnums = @{$bnum_store->$JFR};
+        my $idx = int(rand($#bnums));
+        my $tries;
+        while (grep /$bnums[$idx]/, @used_bnums) {
+            $idx = int(rand($#bnums));
+            if ($tries++ > $max_tries) {
+                warn "\nWARNING: NO AVAILABLE DISCARDED BUSINESS MUMBER FOR $JFR!\n";
+                last;
+            }
         }
-        else {
-            #die "Problem with organization number format: $orgnum";
-            return $orgnum; # Return what came in since it's not a normal Swedish business number
-        }
-        my $anon_number;
-        # Avoid creating an organization number that clashes with the predefined testobjects
-        do {
-            my $ordinal = sprintf "%08d", int(rand(100000000));
-            $anon_number = $lead_dig . $ordinal . $self->_control_digit($lead_dig, $ordinal);
-        } while (grep /$anon_number/, @test_list);
-        
-        $anonymized{$orgnum} = $anon_number;
+        # print ":: Got number $bnums[$idx] after $tries attempts.\n";
+        push @used_bnums, $bnums[$idx];
+        $anonymized{$orgnum} = $lead_dig ? $lead_dig . $bnums[$idx] : $bnums[$idx];
     }
     return $anonymized{$orgnum};
 }

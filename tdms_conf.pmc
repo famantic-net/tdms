@@ -34,7 +34,7 @@ our $export_dir = "ftp";
 push @EXPORT_OK, qw($export_dir);
 
 # The number of records to fetch from the entry tables
-our $init_size = 10;
+our $init_size = 100;
 push @EXPORT_OK, qw($init_size);
 
 # The entry tables and their key column
@@ -102,10 +102,11 @@ push @EXPORT_OK, qw(%orgnum_name %pnr_name);
 # Should be a list of anonymous arrays with pairs of anonymous hashes indicating
 # the 'table1,column1->table2,column2' relation
 our @int_relations = (
-    [ { acib_acitarn => "arn_arbnr_num" }, { acib_acitnoe => "noe_enhnr_num"  } ],
-    [ { acib_acitftg => "orgnr" }, { acin_intr20 => "pnr"  } ],
-    [ { acib_acitftg => "orgnr" }, { acin_intr40 => "pnr"  } ],
-    [ { acib_acitnon => "non_sni_kod" }, { acxx_bnycktal => "snikod"  } ],
+    [ { acib_acitarn => "arn_arbnr_num" }, { acib_acitnoe => "noe_enhnr_num" } ],
+    [ { acib_acitftg => "orgnr" }, { acin_intr20 => "pnr" } ],
+    [ { acib_acitftg => "orgnr" }, { acin_intr40 => "pnr" } ],
+    [ { acib_acitnon => "non_sni_kod" }, { acxx_bnycktal => "snikod" } ],
+    [ { acpr_prtpr => "pnr12" }, { acpr_prtprh => "rel_pnr" } ],
 );
 push @EXPORT_OK, qw(@int_relations);
 

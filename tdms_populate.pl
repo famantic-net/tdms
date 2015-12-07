@@ -76,11 +76,13 @@ Anonymizes and turns on verbose output showing what is being inserted into the l
 use strict;
 use DBI;
 use Getopt::Std;
+use Time::HiRes qw(time);
 use feature 'unicode_strings';
 
 use properties::DBargs;
 use properties::Collector;
 use anon::Anonymize;
+use anon::AnonParams;
 
 our %opts;
 getopts("apsv", \%opts);
@@ -164,7 +166,7 @@ $dbh_rdb->{pg_enable_utf8} = 1;
 
 
 sub populate;
-our (@tob_tuple, %business_contacts, @business_contacts, @testobject_list);
+our (@tob_tuple, %business_contacts, @business_contacts, %business_type);
 
 # The different type of entities to handle
 populate "organizations";
@@ -217,12 +219,20 @@ sub populate {
             last SWITCH;
         };
     }
-    @testobject_list = $target eq "organizations" ? @test_businesses : @test_persons;
     trace_print "\n--- Fetching from $entry_tuple[0] ---\n";
     my $statement;
     local $sth_rdb;
     my ($result_ref, @result_set);
     
+    # Find the column that contains the key
+    my $field_num = sub {
+        my $field = shift;
+        #print "Field     : $field\n";
+        for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+            return $i if $sth_rdb->{NAME}->[$i] eq $field; 
+        }
+    };
+
     if ($specific) {
         trace_print ">>> Specific list <<<\n";
         for my $item (@spec_list) {
@@ -249,13 +259,6 @@ sub populate {
             $sth_rdb->execute();
             $result_ref = $sth_rdb->fetchall_arrayref;
             push @result_set, @{ $result_ref };
-            my $field_num = sub {
-                my $field = shift;
-                #print "Field     : $field\n";
-                for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-                    return $i if $sth_rdb->{NAME}->[$i] eq $field; 
-                }
-            };
             # Remove test objects that might have been fetched
             my $i = 0;
             for my $row (@result_set) {
@@ -280,22 +283,21 @@ sub populate {
     #trace_print "$ins\n";
     
     my $sth_local = eval { $dbh_local->prepare($ins) };
-    # Find the column that contains the key
-    my $number_column;
-    for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-        #trace_print $sth_rdb->{NAME}->[$i];
-        $number_column = $i if $sth_rdb->{NAME}->[$i] eq $entry_tuple[1]; 
-    }
-    
+
     my @collection;
     # Get the result set, store the key elements and insert the result set locally
     for my $row (@result_set) {
         #trace_print ${$row}[0];
-        my $number = ${$row}[$number_column];
+        my $number = ${$row}[&{$field_num}($entry_tuple[1])];
         push @collection, $number;
         
-        # Fetch the business contact persons if processing organizations
+        # Fetch additional data if processing organizations
+        # Business type
+        # business contact persons
+        my $JFR;
         if ($target eq "organizations") {
+            ($JFR) = ${$row}[&{$field_num}("ftg_iklass_kod")] =~ m/(\d\d)$/;
+            $business_type{$number} = $JFR;
             $statement = "SELECT pnr FROM acin_intr20 WHERE orgnr=$number";
             my $sth = eval { $dbh_rdb->prepare( $statement ) };
             $sth->execute();
@@ -316,12 +318,14 @@ sub populate {
         
         if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
-            $row = Anonymize->enact($dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $row, \@testobject_list);
+            my $anonparams = new AnonParams($target, $dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $business_type{$number});
+            $row = Anonymize->enact($row, $anonparams);
         }
         trace_print "Inserting  : @{$row}\n";
         eval { $sth_local->execute(@{$row}) };
+        warn "Error inserting: $@\n" if $@;
     }
-    
+    exit;
     # For every table with an identity number relation fetch the rows that correspond
     # to the keys in the fetched collection
     use tdms_conf qw(@int_relations);
@@ -344,7 +348,7 @@ sub populate {
             for my $row (@{$result_table_ref}) {
                 if ($anonymize) { # Transform the row into anonymous data
                     trace_print "Anonymizing: @{$row}\n";
-                    $row = Anonymize->enact($dbh_rdb, $table, \@tob_tuple, $sth_rdb, $row, \@testobject_list);
+                    $row = Anonymize->enact($dbh_rdb, $table, \@tob_tuple, $sth_rdb, $row);
                 }
                 trace_print "Inserting  : @{$row}\n";
                 eval { $sth_local->execute(@{$row}) };
@@ -353,7 +357,7 @@ sub populate {
             # Fetch the data for the internal relations
             # Format is [{table => key},{table2 => key2}]
             # @relations is a list of the tables that have foreign key relations
-            my @relations = map {keys ${$_}[0]} @int_relations;
+            my @relations = map {keys %{${$_}[0]}} @int_relations;
             #trace_print "Relations: @relations\n";
             # %relations_full is a hash where each foreign key field in the current table
             # maps to the related other table=>field pair.
@@ -362,7 +366,7 @@ sub populate {
                 # The following map construct has some bug where it doesn't consistetly create a correct hash, why it was expanded instead
                 #%relations_full = map { if ($table eq ${[ keys ${$_}[0] ]}[0]) { trace_print ${$_}[0]{$table}, "\n"; ${$_}[0]{$table} => ${$_}[1] } } @int_relations;
                 for my $relation (@int_relations) {
-                    if ($table eq ${[ keys ${$relation}[0] ]}[0]) {
+                    if ($table eq ${[ keys %{${$relation}[0]} ]}[0]) {
                         #trace_print ${$relation}[0]{$table}, "\n";
                         $relations_full{${$relation}[0]{$table}} = ${$relation}[1];
                     }
@@ -409,7 +413,7 @@ sub populate {
                             for my $row (@{$result_table_ref}) {
                                 if ($anonymize) { # Transform the row into anonymous data
                                     trace_print "Anonymizing: @{$row}\n";
-                                    $row = Anonymize->enact($dbh_rdb, $table2, \@tob_tuple, $sth_rdb, $row, \@testobject_list);
+                                    $row = Anonymize->enact($dbh_rdb, $table2, \@tob_tuple, $sth_rdb, $row);
                                 }
                                 trace_print "Inserting  : @{$row}\n";
                                 eval { $sth_local->execute(@{$row}) };

@@ -10,6 +10,9 @@ use anon::AnonymizedFields;
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
 our $address_table = "acib_acitpnr";
+our @address_rows;
+our $limit = 100000;
+our @used_idx;
 our $street_pos = 2;
 our $num_range_low_pos = 4;
 our $num_range_high_pos = 5;
@@ -60,16 +63,23 @@ sub anonymizeZip {
 
 
 sub __get_address {
-        my $statement = "SELECT * FROM $address_table order by random() limit 1";
+    if ($#address_rows < 0) {
+        my $statement = "SELECT * FROM $address_table order by random() limit $limit";
         my $sth = $dbh->prepare( $statement );
         $sth->execute;
-        my $result_ref = $sth->fetchall_arrayref;
-        my @address_row = @{${$result_ref}[0]};
-        my $street = $address_row[$street_pos];
-        $street =~ s/\s*$//; # Remove trailing space
-        my $street_num = $address_row[$num_range_low_pos] + int(rand($address_row[$num_range_high_pos]-$address_row[$num_range_low_pos]));
-        my $street_addr = $street_num > 0 ? "$street $street_num" : $street;
-        return [ $street_addr, $address_row[$municipality_pos], $address_row[$zip_pos] ];
+        @address_rows = @{$sth->fetchall_arrayref};
+    }
+    my $idx;
+    while (grep /$idx/, @used_idx) {
+        $idx = int(rand($#address_rows));
+    }
+    push @used_idx, $idx;
+    my @address_row = @{$address_rows[$idx]};
+    my $street = $address_row[$street_pos];
+    $street =~ s/\s*$//; # Remove trailing space
+    my $street_num = $address_row[$num_range_low_pos] + int(rand($address_row[$num_range_high_pos]-$address_row[$num_range_low_pos]));
+    my $street_addr = $street_num > 0 ? "$street $street_num" : $street;
+    return [ $street_addr, $address_row[$municipality_pos], $address_row[$zip_pos] ];
 }
 
 
