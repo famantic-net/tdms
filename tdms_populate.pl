@@ -318,18 +318,18 @@ sub populate {
         
         if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
-            my $anonparams = new AnonParams($target, $dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $business_type{$number});
+            my $anonparams = new AnonParams($target, $dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $JFR);
             $row = Anonymize->enact($row, $anonparams);
         }
         trace_print "Inserting  : @{$row}\n";
         eval { $sth_local->execute(@{$row}) };
         warn "Error inserting: $@\n" if $@;
     }
-    exit;
+    
     # For every table with an identity number relation fetch the rows that correspond
     # to the keys in the fetched collection
     use tdms_conf qw(@int_relations);
-    for my $table (keys %name_hash) {
+    for my $table (sort keys %name_hash) {
         trace_print "\n--- Fetching from $table ---\n";
         for my $num (@collection) {
             $statement = "SELECT * FROM $table WHERE $name_hash{$table}='$num'";
@@ -348,7 +348,8 @@ sub populate {
             for my $row (@{$result_table_ref}) {
                 if ($anonymize) { # Transform the row into anonymous data
                     trace_print "Anonymizing: @{$row}\n";
-                    $row = Anonymize->enact($dbh_rdb, $table, \@tob_tuple, $sth_rdb, $row);
+                    my $anonparams = new AnonParams($target, $dbh_rdb, $table, \@tob_tuple, $sth_rdb);
+                    $row = Anonymize->enact($row, $anonparams);
                 }
                 trace_print "Inserting  : @{$row}\n";
                 eval { $sth_local->execute(@{$row}) };
@@ -413,7 +414,8 @@ sub populate {
                             for my $row (@{$result_table_ref}) {
                                 if ($anonymize) { # Transform the row into anonymous data
                                     trace_print "Anonymizing: @{$row}\n";
-                                    $row = Anonymize->enact($dbh_rdb, $table2, \@tob_tuple, $sth_rdb, $row);
+                                    my $anonparams = new AnonParams($target, $dbh_rdb, $table2, \@tob_tuple, $sth_rdb);
+                                    $row = Anonymize->enact($row, $anonparams);
                                 }
                                 trace_print "Inserting  : @{$row}\n";
                                 eval { $sth_local->execute(@{$row}) };

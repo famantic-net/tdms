@@ -18,6 +18,8 @@ Om dispensnummer saknas anges ordinarie organisationsnummer.
 
 use strict;
 use feature 'unicode_strings';
+use Carp;
+use List::Util qw(shuffle);
 
 use anon::AnonymizedFields;
 use anon::LegalEntity;
@@ -25,9 +27,8 @@ use anon::Discarded_bnums;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
-our @used_bnums = ();
 our $bnum_store = undef;
-our $max_tries = 1000;
+our $tried_all;
 
 sub new() {
     my $class = shift;
@@ -39,31 +40,73 @@ sub new() {
 }
 
 
-# Returns a new organization number stub based on the received number
-sub anonymizeOrgNumber { # $orgnum
+# Returns a new business number based on the received number
+# with the same JFR
+sub anonymizeOrgNumber { # orgnum, anonparams
     my $self = shift;
     my $orgnum = shift;
-    my $JFR= "JFR_" . shift;
+    my $anonparams = shift;
+    my $JFR;
+    if ($anonparams->JFR) {
+        $JFR = $anonparams->JFR;
+    }
+    else{
+        my $statement = "SELECT * FROM acib_acitftg WHERE ftg_org_num='$orgnum'";
+        my $sth = eval { $anonparams->dbh->prepare( $statement ) };
+        $sth->execute();
+        my $result_ref = $sth->fetchall_arrayref;
+        my @result_set = @{ $result_ref };
+        # Find the column that contains the key
+        my $field_num = sub {
+            my $field = shift;
+            #print "Field     : $field\n";
+            for ( my $i = 0 ; $i < $sth->{NUM_OF_FIELDS} ; $i++ ) {
+                return $i if $sth->{NAME}->[$i] eq $field; 
+            }
+        };
+        my $row = $result_set[0];
+        ($JFR) = ${$row}[&{$field_num}("ftg_iklass_kod")] =~ m/(\d\d)$/;
+    }
+    $JFR = "JFR_$JFR";
+    #print ":: $orgnum:$JFR\n"; # XXX: removeme
+    my $lead_dig;
+    if (length($orgnum) == 12) {
+        ($lead_dig) = $orgnum =~ m/^(\d\d)/;
+        $orgnum =~ s/^(\d\d)//;
+    }
     unless ($anonymized{$orgnum}) {
-        my $lead_dig;
-        if (length($orgnum) == 12) {
-            #($lead_dig) = $orgnum =~ m/^(\d\d)/;
-            $orgnum =~ s/^(\d\d)//;
-            $lead_dig = $1;
-        }
-        my @bnums = @{$bnum_store->$JFR};
-        my $idx = int(rand($#bnums));
-        my $tries;
-        while (grep /$bnums[$idx]/, @used_bnums) {
-            $idx = int(rand($#bnums));
-            if ($tries++ > $max_tries) {
-                warn "\nWARNING: NO AVAILABLE DISCARDED BUSINESS MUMBER FOR $JFR!\n";
-                last;
+        my (@bnums, $idx);
+        if ($bnum_store->can($JFR)) {
+            @bnums = @{$bnum_store->$JFR};
+            unless ($#bnums < 0) { # No more numbers in that JFR category
+                $idx = int(rand($#bnums));
+            }
+            else {
+                warn "\nWARNING: NO AVAILABLE DISCARDED BUSINESS NUMBER FOR $JFR!\n";
+                unless ($tried_all) {
+                    # Assign a business number from any of the other available
+                    my @JFRs = @{$bnum_store->JFRall};
+                    for my $jfr (shuffle @JFRs) {
+                        $JFR = "JFR_$jfr";
+                        @bnums = @{$bnum_store->$JFR};
+                        unless ($#bnums < 0) {
+                            $idx = int(rand($#bnums));
+                            last;
+                        }
+                    }
+                    $tried_all = 1 unless defined $idx;
+                }
+                else {
+                    confess "\nERROR: Can't anonymize business number $orgnum\n";
+                }
             }
         }
-        # print ":: Got number $bnums[$idx] after $tries attempts.\n";
-        push @used_bnums, $bnums[$idx];
+        else {
+            carp "\nCrap! Can't get anonymous number for $orgnum in $JFR.\n";
+        }
+        $orgnum = $lead_dig . $orgnum if defined $lead_dig;
         $anonymized{$orgnum} = $lead_dig ? $lead_dig . $bnums[$idx] : $bnums[$idx];
+        $bnum_store->discard_number($JFR, $idx);
     }
     return $anonymized{$orgnum};
 }

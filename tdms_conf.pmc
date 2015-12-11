@@ -34,7 +34,7 @@ our $export_dir = "ftp";
 push @EXPORT_OK, qw($export_dir);
 
 # The number of records to fetch from the entry tables
-our $init_size = 100;
+our $init_size = 10;
 push @EXPORT_OK, qw($init_size);
 
 # The entry tables and their key column

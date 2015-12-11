@@ -3,11 +3,12 @@ package Discarded_bnums;
 # Obtained from ftp://164.9.148.225, CWD 'ACIB.'
 
 # Created with
-# cat P065.RAPPPUTX.G002* | perl -nle 'print if /\d{6}-/'  | perl -nle '($orgnr, $klass) = m/(\d{6}-\d{4})\s+(\d+)/; push @{$klasshash{$klass}}, $orgnr; END {for my $key (sort keys %klasshash) {print "JFR_$key =>\t["; for my $entry (@{$klasshash{$key}}) {$entry =~ s/-//; print qq(\t\t"$entry",)} print "\t]," }}' > bnumbers.txt
+# cat P065.RAPPPUTX.G002* | perl -nle 'print if /\d{6}-/'  | perl -nle '($orgnr, $klass) = m/(\d{6}-\d{4})\s+(\d+)/; push @{$klasshash{$klass}}, $orgnr; END {print "JFRall =>\t[ qw(@{[ sort keys %klasshash ]}) ],"; for my $key (sort keys %klasshash) {print "JFR_$key =>\t["; for my $entry (@{$klasshash{$key}}) {$entry =~ s/-//; print qq(\t\t"$entry",)} print "\t]," }}' > bnumbers.txt
 
 use strict;
 
 our %Discarded_bnums = (
+   JFRall =>	[ qw(10 21 22 23 31 41 42 43 49 51 53 54 61 62 63 71 72 81 83 85 87 91 92 93 94 95 96 98 99) ],
    JFR_10 =>	[
            "0804126209",
            "0909045759",
@@ -94078,6 +94079,13 @@ our %Discarded_bnums = (
 sub new() {
     my $self = shift->_classobj();
     return bless $self;
+}
+
+sub discard_number {
+    my $self = shift;
+    my $JFR = shift;
+    my $idx = shift;
+    splice @{$Discarded_bnums{$JFR}}, $idx, 1;
 }
 
 

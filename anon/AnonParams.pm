@@ -3,6 +3,7 @@ package AnonParams;
 
 use strict;
 
+# TODO: Change to instance attributes, file:///home/nenant/HOST/Dropbox/work/docs/camel/ch12_04.htm
 our %AnonParams = (
     target => undef,
     dbh => undef,
@@ -13,7 +14,7 @@ our %AnonParams = (
 );
 
 
-sub new() { # $dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $row, $business_type{$number}
+sub new() { # $dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $row, $JFR
     my $self = shift->_classobj();
     bless $self;
     # Initialize with received arguments
@@ -22,7 +23,7 @@ sub new() { # $dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $row, $business_
     $self->entry_table(shift);
     $self->tob_tuple(shift);
     $self->sth(shift);
-    $self->JFR(shift);
+    $self->JFR(shift) if @_;
     return $self;
 }
 
