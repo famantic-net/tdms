@@ -12,7 +12,6 @@ our %anonymized = ();
 our $address_table = "acib_acitpnr";
 our @address_rows;
 our $limit = 100000;
-our @used_idx;
 our $street_pos = 2;
 our $num_range_low_pos = 4;
 our $num_range_high_pos = 5;
@@ -69,12 +68,9 @@ sub __get_address {
         $sth->execute;
         @address_rows = @{$sth->fetchall_arrayref};
     }
-    my $idx;
-    while (grep /$idx/, @used_idx) {
-        $idx = int(rand($#address_rows));
-    }
-    push @used_idx, $idx;
+    my $idx = int(rand($#address_rows));
     my @address_row = @{$address_rows[$idx]};
+    splice @address_rows, $idx, 1;
     my $street = $address_row[$street_pos];
     $street =~ s/\s*$//; # Remove trailing space
     my $street_num = $address_row[$num_range_low_pos] + int(rand($address_row[$num_range_high_pos]-$address_row[$num_range_low_pos]));

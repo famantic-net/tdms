@@ -40,7 +40,6 @@ sub enact { #
         ${$row}[&{$field_num}($tob_tuple[1])] = 4; # Testobject
     }
     
-    # TODO: Anonymizing addresses is defunct
     { # Businesses
         my $orgnum = new BusinessNum;
         if (grep /$table/, $orgnum->list_attr) {
