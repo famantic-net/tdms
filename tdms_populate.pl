@@ -318,7 +318,7 @@ sub populate {
         
         if ($anonymize) { # Transform the row into anonymous data
             trace_print "Anonymizing: @{$row}\n";
-            my $anonparams = new AnonParams($target, $dbh_rdb, $entry_tuple[0], \@tob_tuple, $sth_rdb, $JFR);
+            my $anonparams = new AnonParams(target => $target, dbh => $dbh_rdb, entry_table => $entry_tuple[0], tob_tuple => \@tob_tuple, sth => $sth_rdb, JFR => $JFR);
             $row = Anonymize->enact($row, $anonparams);
         }
         trace_print "Inserting  : @{$row}\n";
@@ -348,7 +348,7 @@ sub populate {
             for my $row (@{$result_table_ref}) {
                 if ($anonymize) { # Transform the row into anonymous data
                     trace_print "Anonymizing: @{$row}\n";
-                    my $anonparams = new AnonParams($target, $dbh_rdb, $table, \@tob_tuple, $sth_rdb);
+                    my $anonparams = new AnonParams(target => $target, dbh => $dbh_rdb, entry_table => $table, tob_tuple => \@tob_tuple, sth => $sth_rdb);
                     $row = Anonymize->enact($row, $anonparams);
                 }
                 trace_print "Inserting  : @{$row}\n";
@@ -414,7 +414,7 @@ sub populate {
                             for my $row (@{$result_table_ref}) {
                                 if ($anonymize) { # Transform the row into anonymous data
                                     trace_print "Anonymizing: @{$row}\n";
-                                    my $anonparams = new AnonParams($target, $dbh_rdb, $table2, \@tob_tuple, $sth_rdb);
+                                    my $anonparams = new AnonParams(target => $target, dbh => $dbh_rdb, entry_table => $table2, tob_tuple => \@tob_tuple, sth => $sth_rdb);
                                     $row = Anonymize->enact($row, $anonparams);
                                 }
                                 trace_print "Inserting  : @{$row}\n";
