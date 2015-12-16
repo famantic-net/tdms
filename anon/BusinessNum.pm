@@ -14,6 +14,8 @@ på att det alltid inleds med två 6:or.
 
 Dispensnumret är tolvställigt och börjar på två 6:or.
 Om dispensnummer saknas anges ordinarie organisationsnummer.
+
+Andra inledande nummer är 19 och 16.
 =cut
 
 use strict;
@@ -23,7 +25,7 @@ use List::Util qw(shuffle);
 
 use anon::AnonymizedFields;
 use anon::LegalEntity;
-use anon::Discarded_bnums;
+use anon::data::Discarded_bnums;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
@@ -68,7 +70,6 @@ sub anonymizeOrgNumber { # orgnum, anonparams
         ($JFR) = ${$row}[&{$field_num}("ftg_iklass_kod")] =~ m/(\d\d)$/;
     }
     $JFR = "JFR_$JFR";
-    #print ":: $orgnum:$JFR\n"; # XXX: removeme
     my $lead_dig;
     if (length($orgnum) == 12) {
         ($lead_dig) = $orgnum =~ m/^(\d\d)/;
@@ -82,33 +83,41 @@ sub anonymizeOrgNumber { # orgnum, anonparams
                 $idx = int(rand($#bnums));
             }
             else {
-                warn "\nWARNING: NO AVAILABLE DISCARDED BUSINESS NUMBER FOR $JFR!\n";
-                unless ($tried_all) {
-                    # Assign a business number from any of the other available
-                    my @JFRs = @{$bnum_store->JFRall};
-                    for my $jfr (shuffle @JFRs) {
-                        $JFR = "JFR_$jfr";
-                        @bnums = @{$bnum_store->$JFR};
-                        unless ($#bnums < 0) {
-                            $idx = int(rand($#bnums));
-                            last;
-                        }
-                    }
-                    $tried_all = 1 unless defined $idx;
-                }
-                else {
-                    confess "\nERROR: Can't anonymize business number $orgnum\n";
-                }
+                $idx = _get_random_number($orgnum, $JFR);
             }
         }
         else {
-            carp "\nCrap! Can't get anonymous number for $orgnum in $JFR.\n";
+            $idx = _get_random_number($orgnum, $JFR);
         }
         $orgnum = $lead_dig . $orgnum if defined $lead_dig;
         $anonymized{$orgnum} = $lead_dig ? $lead_dig . $bnums[$idx] : $bnums[$idx];
         $bnum_store->discard_number($JFR, $idx);
     }
     return $anonymized{$orgnum};
+}
+
+sub _get_random_number {
+    my $orgnum = shift;
+    my $JFR = shift if @_;
+    my $idx;
+    carp "\nWARNING: NO AVAILABLE DISCARDED BUSINESS NUMBER FOR $orgnum in $JFR!\n";
+    unless ($tried_all) {
+        # Assign a business number from any of the other available
+        my @JFRs = @{$bnum_store->JFRall};
+        for my $jfr (shuffle @JFRs) {
+            $JFR = "JFR_$jfr";
+            my @bnums = @{$bnum_store->$JFR};
+            unless ($#bnums < 0) {
+                $idx = int(rand($#bnums));
+                last;
+            }
+        }
+        $tried_all = 1 unless defined $idx;
+    }
+    else {
+        confess "\nERROR: Can't anonymize business number $orgnum\n";
+    }
+    return $idx;
 }
 
 

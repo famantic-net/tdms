@@ -123,7 +123,7 @@ our $export_tables = sub {
     }
     for my $item (@int_relations) {
         #print @{[ keys ${$item}[1] ]}, "\n";
-        map { $tables{$_} = 1 } keys ${$item}[1];
+        map { $tables{$_} = 1 } keys %{${$item}[1]};
     }
     delete $tables{nyckeltal};
     return keys %tables;

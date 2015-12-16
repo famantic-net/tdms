@@ -1,9 +1,9 @@
-package Discarded_bnums;
+package Discarded_bnums; # Data class
 # Discarded business numbers from monthly file dumps to P065.RAPPPUTX.* in mainframe
 # Obtained from ftp://164.9.148.225, CWD 'ACIB.'
 
 # Created with
-# cat P065.RAPPPUTX.G002* | perl -nle 'print if /\d{6}-/'  | perl -nle '($orgnr, $klass) = m/(\d{6}-\d{4})\s+(\d+)/; push @{$klasshash{$klass}}, $orgnr; END {print "JFRall =>\t[ qw(@{[ sort keys %klasshash ]}) ],"; for my $key (sort keys %klasshash) {print "JFR_$key =>\t["; for my $entry (@{$klasshash{$key}}) {$entry =~ s/-//; print qq(\t\t"$entry",)} print "\t]," }}' > bnumbers.txt
+# cd resources && cat P065.RAPPPUTX.G002* | perl -nle 'print if /\d{6}-/'  | perl -nle '($orgnr, $klass) = m/(\d{6}-\d{4})\s+(\d+)/; push @{$klasshash{$klass}}, $orgnr; END {print "JFRall =>\t[ qw(@{[ sort keys %klasshash ]}) ],"; for my $key (sort keys %klasshash) {print "JFR_$key =>\t["; for my $entry (@{$klasshash{$key}}) {$entry =~ s/-//; print qq(\t\t"$entry",)} print "\t]," }}' > bnumbers.txt
 
 use strict;
 
