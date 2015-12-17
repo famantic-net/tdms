@@ -76668,11 +76668,15 @@ sub new() {
     return bless $self;
 }
 
-sub discard_number {
+sub get_ARNs {
+    my $self = shift;
+    return keys %{$self};
+}
+
+sub discard_ARN {
     my $self = shift;
     my $ARN = shift;
-    my $idx = shift;
-    splice @{$ARN_DUNS{$ARN}}, $idx, 1;
+    delete $self->{$ARN};
 }
 
 

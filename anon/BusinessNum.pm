@@ -100,7 +100,7 @@ sub _get_random_number {
     my $orgnum = shift;
     my $JFR = shift if @_;
     my $idx;
-    carp "\nWARNING: NO AVAILABLE DISCARDED BUSINESS NUMBER FOR $orgnum in $JFR!\n";
+    print "\nWARNING: NO AVAILABLE DISCARDED BUSINESS NUMBER FOR $orgnum in $JFR!\n";
     unless ($tried_all) {
         # Assign a business number from any of the other available
         my @JFRs = @{$bnum_store->JFRall};

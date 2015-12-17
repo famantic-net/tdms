@@ -10,7 +10,7 @@ use anon::PersonNum;
 use anon::PersonName;
 use anon::BusinessAddress;
 use anon::PrivateAddress;
-#use anon::ArbNum;
+use anon::ArbNum;
 
 our $dbh_rdb;
 
@@ -48,13 +48,13 @@ sub enact { #
                 ${$row}[&{$field_num}($field)] = $orgnum->anonymizeOrgNumber(${$row}[&{$field_num}($field)], $anonparams);
             }
         }
-        #my $arbnum = new ArbNum;
-        #if (grep /$table/, $arbnum->list_attr) {
-        #    for my $field (@{$arbnum->fields($table)}) {
-        #        $id = ${$row}[&{$field_num}($field)];
-        #        ${$row}[&{$field_num}($field)] = $arbnum->anonymizeArbNumber(${$row}[&{$field_num}($field)]);
-        #    }
-        #}
+        my $arbnum = new ArbNum;
+        if (grep /$table/, $arbnum->list_attr) {
+            for my $field (@{$arbnum->fields($table)}) {
+                $id = ${$row}[&{$field_num}($field)];
+                ${$row}[&{$field_num}($field)] = $arbnum->anonymizeWorkplaceNumber(${$row}[&{$field_num}($field)]);
+            }
+        }
         my $orgname = new BusinessName($dbh_rdb, $id);
         if (grep /$table/, $orgname->list_attr("full")) {
             for my $field (@{$orgname->fields('full', $table)}) {
