@@ -345,8 +345,11 @@ sub populate {
             $ins .= ");";
             #trace_print "$ins\n";
             my $sth_local = eval { $dbh_local->prepare($ins) };
+            my @anonymized;
             for my $row (@{$result_table_ref}) {
                 if ($anonymize) { # Transform the row into anonymous data
+                    my @row_copy = @{$row};
+                    push @anonymized, \@row_copy;
                     trace_print "Anonymizing: @{$row}\n";
                     my $anonparams = new AnonParams(target => $target, dbh => $dbh_rdb, entry_table => $table, tob_tuple => \@tob_tuple, sth => $sth_rdb);
                     $row = Anonymize->enact($row, $anonparams);
@@ -383,7 +386,8 @@ sub populate {
                 }
                 # Collect all foreign key fields
                 my @related_data;
-                for my $row (@{$result_table_ref}) {
+                my @orig_data = $anonymize ? @anonymized : @{$result_table_ref};
+                for my $row (@orig_data) {
                     my $related = ${$row}[$column1_pos];
                     #trace_print "Related: $related\n";
                     $related =~ s/\s+$//; # Remove trailng blanks
@@ -424,6 +428,7 @@ sub populate {
                                 }
                                 
                             }
+                            trace_print "...\n";
                         }
                     }
                 }
