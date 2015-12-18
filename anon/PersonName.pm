@@ -6,8 +6,8 @@ use feature 'unicode_strings';
 use tdms_conf qw($testobject_tag);
 use anon::LegalEntity;
 use anon::AnonymizedFields;
-use anon::SurNames;
-use anon::GivenNames;
+use anon::data::SurNames;
+use anon::data::GivenNames;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
