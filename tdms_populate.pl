@@ -166,6 +166,7 @@ $dbh_rdb->{pg_enable_utf8} = 1;
 
 
 sub populate;
+sub get_internal_relations;
 our (@tob_tuple, %business_contacts, @business_contacts, %business_type);
 
 # The different type of entities to handle
@@ -285,6 +286,7 @@ sub populate {
     my $sth_local = eval { $dbh_local->prepare($ins) };
 
     my @collection;
+    my @anonymized;
     # Get the result set, store the key elements and insert the result set locally
     for my $row (@result_set) {
         #trace_print ${$row}[0];
@@ -317,14 +319,19 @@ sub populate {
         }
         
         if ($anonymize) { # Transform the row into anonymous data
+            my @row_copy = @{$row};
+            push @anonymized, \@row_copy;
             trace_print "Anonymizing: @{$row}\n";
-            my $anonparams = new AnonParams(target => $target, dbh => $dbh_rdb, entry_table => $entry_tuple[0], tob_tuple => \@tob_tuple, sth => $sth_rdb, JFR => $JFR);
+            my $anonparams = new AnonParams(dbh => $dbh_rdb, entry_table => $entry_tuple[0], tob_tuple => \@tob_tuple, sth => $sth_rdb, JFR => $JFR);
             $row = Anonymize->enact($row, $anonparams);
         }
         trace_print "Inserting  : @{$row}\n";
         eval { $sth_local->execute(@{$row}) };
-        warn "Error inserting: $@\n" if $@;
+        if ($@) {
+            print "Can't insert @{$row}\n$DBI::errstr\n";
+        }
     }
+    get_internal_relations $entry_tuple[0], \@result_set, \@anonymized;
     
     # For every table with an identity number relation fetch the rows that correspond
     # to the keys in the fetched collection
@@ -351,88 +358,17 @@ sub populate {
                     my @row_copy = @{$row};
                     push @anonymized, \@row_copy;
                     trace_print "Anonymizing: @{$row}\n";
-                    my $anonparams = new AnonParams(target => $target, dbh => $dbh_rdb, entry_table => $table, tob_tuple => \@tob_tuple, sth => $sth_rdb);
+                    my $anonparams = new AnonParams(dbh => $dbh_rdb, entry_table => $table, tob_tuple => \@tob_tuple, sth => $sth_rdb);
                     $row = Anonymize->enact($row, $anonparams);
                 }
                 trace_print "Inserting  : @{$row}\n";
                 eval { $sth_local->execute(@{$row}) };
+                if ($@) {
+                    print "Can't insert @{$row}\n$DBI::errstr\n";
+                }
             }
             
-            # Fetch the data for the internal relations
-            # Format is [{table => key},{table2 => key2}]
-            # @relations is a list of the tables that have foreign key relations
-            my @relations = map {keys %{${$_}[0]}} @int_relations;
-            #trace_print "Relations: @relations\n";
-            # %relations_full is a hash where each foreign key field in the current table
-            # maps to the related other table=>field pair.
-            my %relations_full;
-            if ( grep(/$table/, @relations) ) {
-                # The following map construct has some bug where it doesn't consistetly create a correct hash, why it was expanded instead
-                #%relations_full = map { if ($table eq ${[ keys ${$_}[0] ]}[0]) { trace_print ${$_}[0]{$table}, "\n"; ${$_}[0]{$table} => ${$_}[1] } } @int_relations;
-                for my $relation (@int_relations) {
-                    if ($table eq ${[ keys %{${$relation}[0]} ]}[0]) {
-                        #trace_print ${$relation}[0]{$table}, "\n";
-                        $relations_full{${$relation}[0]{$table}} = ${$relation}[1];
-                    }
-                }
-                delete $relations_full{""}; # In case there are empty elements from skipping relations
-                #trace_print "Related keys: ", keys %relations_full, "\n";
-            }
-            for my $column1 (keys %relations_full) {
-                my $column1_pos;
-                for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-                    #trace_print $sth_rdb->{NAME}->[$i];
-                    $column1_pos = $i if $sth_rdb->{NAME}->[$i] eq $column1;
-                }
-                # Collect all foreign key fields
-                my @related_data;
-                my @orig_data = $anonymize ? @anonymized : @{$result_table_ref};
-                for my $row (@orig_data) {
-                    my $related = ${$row}[$column1_pos];
-                    #trace_print "Related: $related\n";
-                    $related =~ s/\s+$//; # Remove trailng blanks
-                    push @related_data, $related;
-                }
-                #trace_print "Related data: @related_data\n";
-                # Fetch the data from the related tables
-                for my $rel_item (@related_data) {
-                    for my $table2 (keys %{$relations_full{$column1}}) {
-                        my $column2 = ${$relations_full{$column1}}{$table2};
-                        #trace_print "$table2 => $column2";
-                        $statement = "SELECT * FROM $table2 WHERE $column2='$rel_item'";
-                        #trace_print "$statement\n";
-                        $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
-                        $sth_rdb->execute();
-                        my $result_table_ref = $sth_rdb->fetchall_arrayref;
-                        my $result_size = scalar @{$result_table_ref};
-                        if ($result_size) {
-                            trace_print "... Fetched from $table2 ($rel_item, $result_size rows) ...\n";
-                            my $ins = "INSERT INTO $table2 VALUES (";
-                            for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
-                                $ins .= "?, ";
-                            }
-                            $ins =~ s/, $//;
-                            $ins .= ");";
-                            #trace_print "$ins\n";
-                            my $sth_local = eval { $dbh_local->prepare($ins) };
-                            for my $row (@{$result_table_ref}) {
-                                if ($anonymize) { # Transform the row into anonymous data
-                                    trace_print "Anonymizing: @{$row}\n";
-                                    my $anonparams = new AnonParams(target => $target, dbh => $dbh_rdb, entry_table => $table2, tob_tuple => \@tob_tuple, sth => $sth_rdb);
-                                    $row = Anonymize->enact($row, $anonparams);
-                                }
-                                trace_print "Inserting  : @{$row}\n";
-                                eval { $sth_local->execute(@{$row}) };
-                                if ($@) {
-                                    warn "Can't insert @{$row}\n$DBI::errstr\n";
-                                }
-                                
-                            }
-                            trace_print "...\n";
-                        }
-                    }
-                }
-            }
+            get_internal_relations $table, $result_table_ref, \@anonymized;
         }
     }
     # Add the business contacts to the test objects as specific lists
@@ -446,3 +382,84 @@ sub populate {
 }
 
 
+sub get_internal_relations {
+    my $table = shift;
+    my $result_table_ref = shift;
+    my $anonymized = shift;
+    my @anonymized = @{$anonymized};
+    # Fetch the data for the internal relations
+    # Format is [{table => key},{table2 => key2}]
+    # @relations is a list of the tables that have foreign key relations
+    my @relations = map {keys %{${$_}[0]}} @int_relations;
+    #trace_print "Relations: @relations\n";
+    # %relations_full is a hash where each foreign key field in the current table
+    # maps to the related other table=>field pair.
+    my %relations_full;
+    if ( grep(/$table/, @relations) ) {
+        # The following map construct has some bug where it doesn't consistetly create a correct hash, why it was expanded instead
+        #%relations_full = map { if ($table eq ${[ keys ${$_}[0] ]}[0]) { trace_print ${$_}[0]{$table}, "\n"; ${$_}[0]{$table} => ${$_}[1] } } @int_relations;
+        for my $relation (@int_relations) {
+            if ($table eq ${[ keys %{${$relation}[0]} ]}[0]) {
+                #trace_print ${$relation}[0]{$table}, "\n";
+                $relations_full{${$relation}[0]{$table}} = ${$relation}[1];
+            }
+        }
+        delete $relations_full{""}; # In case there are empty elements from skipping relations
+        #trace_print "Related keys: ", keys %relations_full, "\n";
+    }
+    for my $column1 (keys %relations_full) {
+        my $column1_pos;
+        for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+            #trace_print $sth_rdb->{NAME}->[$i];
+            $column1_pos = $i if $sth_rdb->{NAME}->[$i] eq $column1;
+        }
+        # Collect all foreign key fields
+        my @related_data;
+        my @orig_data = $anonymize ? @anonymized : @{$result_table_ref};
+        for my $row (@orig_data) {
+            my $related = ${$row}[$column1_pos];
+            #trace_print "Related: $related\n";
+            $related =~ s/\s+$//; # Remove trailng blanks
+            push @related_data, $related;
+        }
+        #trace_print "Related data: @related_data\n";
+        # Fetch the data from the related tables
+        for my $rel_item (@related_data) {
+            for my $table2 (keys %{$relations_full{$column1}}) {
+                my $column2 = ${$relations_full{$column1}}{$table2};
+                #trace_print "$table2 => $column2";
+                my $statement = "SELECT * FROM $table2 WHERE $column2='$rel_item'";
+                #trace_print "$statement\n";
+                $sth_rdb = eval { $dbh_rdb->prepare( $statement ) };
+                $sth_rdb->execute();
+                my $result_table_ref = $sth_rdb->fetchall_arrayref;
+                my $result_size = scalar @{$result_table_ref};
+                if ($result_size) {
+                    trace_print "... Fetched from $table2 ($rel_item, $result_size rows) ...\n";
+                    my $ins = "INSERT INTO $table2 VALUES (";
+                    for ( my $i = 0 ; $i < $sth_rdb->{NUM_OF_FIELDS} ; $i++ ) {
+                        $ins .= "?, ";
+                    }
+                    $ins =~ s/, $//;
+                    $ins .= ");";
+                    #trace_print "$ins\n";
+                    my $sth_local = eval { $dbh_local->prepare($ins) };
+                    for my $row (@{$result_table_ref}) {
+                        if ($anonymize) { # Transform the row into anonymous data
+                            trace_print "Anonymizing: @{$row}\n";
+                            my $anonparams = new AnonParams(dbh => $dbh_rdb, entry_table => $table2, tob_tuple => \@tob_tuple, sth => $sth_rdb);
+                            $row = Anonymize->enact($row, $anonparams);
+                        }
+                        trace_print "Inserting  : @{$row}\n";
+                        eval { $sth_local->execute(@{$row}) };
+                        if ($@) {
+                            print "Can't insert @{$row}\n$DBI::errstr\n";
+                        }
+                        
+                    }
+                    trace_print "...\n";
+                }
+            }
+        }
+    }
+}
