@@ -1,57 +1,108 @@
 package PersonNum;
+# TODO: Assuming century 19. Must be corrected after 2015 so that also century 20 is handled correctly
+# TODO: Obtain year as close as possible
 
 use strict;
 use feature 'unicode_strings';
+use Carp;
+use List::Util qw(shuffle);
 
-use anon::LegalEntity;
 use anon::AnonymizedFields;
+use anon::LegalEntity;
+use anon::data::TestPersonNums;
 
 our @ISA = qw(LegalEntity);
 our %anonymized = ();
-#our @test_list;
+our $pnum_store = undef;
+our $tried_all;
+
 
 sub new() {
     my $class = shift;
     my $self = AnonymizedFields->pnum;
-    #my $test_list= shift;
-    #@test_list = @{$test_list};
+    unless ($pnum_store) {
+        $pnum_store = new TestPersonNums;
+    }
     return bless $self;
 }
 
-
-# Returns a new person number stub based on the received number
-sub anonymizePersonNumber {
+# Returns a new person number based on the received number
+# Tries to obtain same year, otherwise random
+sub anonymizePersonNumber { # pnum
     my $self = shift;
     my $pnum = shift;
-    return $pnum if $pnum =~ m/^\s*$/; # If empty return what came in
-    #print "Received: $pnum\n";
-    unless ($anonymized{$pnum}) { # Already anonymized
-        my $lead_dig;
-        if (length $pnum == 10 ) {
-            ($lead_dig) = $pnum =~ m/^(\d\d)/;
-        }
-        elsif (length $pnum == 12) {
-            my ($century, $short_pnum) = $pnum =~ m/^(\d\d)(.+)/;
-            if ($anonymized{$short_pnum}) {
-                return $anonymized{$pnum} = $century . $anonymized{$short_pnum}; 
+    if ($pnum =~ m/^\s*$/ or $pnum == 0) { # If empty return what came in
+        return $pnum;
+    }
+    my $year;
+    if (length($pnum) == 12) {
+        ($year) = $pnum =~ m/^(\d{4})/;
+        
+    }
+    else {
+        ($year) = $pnum =~ m/^(\d{2})/;
+        $year = "19" . $year; 
+    }
+    unless ($anonymized{$pnum}) {
+        my $YEAR = "Y_" . $year;
+        my (@pnums, $idx);
+        if ($pnum_store->can($YEAR)) {
+            @pnums = @{$pnum_store->$YEAR};
+            unless ($#pnums < 0) { # No more numbers in that YEAR category
+                $idx = int(rand($#pnums));
             }
-            ($lead_dig) = $pnum =~ m/^(\d\d\d\d)/;
+            else {
+                ($YEAR, $idx) = _get_random_YEAR($pnum, $YEAR);
+                @pnums = @{$pnum_store->$YEAR};
+            }
         }
         else {
-            #die "Problem with person number format: $pnum";
-            return $pnum; # Return what came in since it's not a normal Swedish person number
+            ($YEAR, $idx) = _get_random_YEAR($pnum, $YEAR);
+            @pnums = @{$pnum_store->$YEAR};
         }
-        my $anon_number;
-        ## Avoid creating a person number that clashes with the predefined testobjects
-        #do {
-            my $month = sprintf "%02d", int(rand(12)) + 1;
-            my $day = sprintf "%02d", int(rand(27)) + 1;
-            my $ordinal = sprintf "%03d", int(rand(1000));
-            $anon_number = $lead_dig . $month . $day . $ordinal . $self->_control_digit($lead_dig, $month, $day, $ordinal);
-        #} while (grep /$anon_number/, @test_list);
-        $anonymized{$pnum} = $anon_number;
+        my $anon_pnum = $pnums[$idx];
+        my $mod_pnum = $pnum;
+        # Assign both normal and full anonymous person numbers
+        if (length($pnum) == 12) {
+            $anonymized{$pnum} = $anon_pnum; # Full anonymized
+            $mod_pnum =~ s/^\d\d//;
+            $anon_pnum =~ s/^\d\d//;
+            $anonymized{$mod_pnum} = $anon_pnum; # Normal anoymized
+        }
+        else {
+            $mod_pnum = "19" . $mod_pnum;
+            $anonymized{$mod_pnum} = $anon_pnum;  # Full anonymized
+            $anon_pnum =~ s/^\d\d//;
+            $anonymized{$pnum} = $anon_pnum;  # Normal anoymized
+        }
+        $pnum_store->discard_number($YEAR, $idx);
     }
     return $anonymized{$pnum};
+}
+
+sub _get_random_YEAR {
+    my $pnum = shift;
+    my $YEAR = shift;
+    my $idx;
+    print "WARNING: NO AVAILABLE TEST PERSON NUMBER FOR $pnum in $YEAR!\n";
+    unless ($tried_all) {
+        # Assign a person number from the other available
+        my @YEARs = $pnum_store->get_all_YEARs;
+        for my $year_key (shuffle @YEARs) {
+            next unless $pnum_store->can($year_key);
+            my @pnums = @{$pnum_store->$year_key};
+            unless ($#pnums < 0) {
+                $idx = int(rand($#pnums));
+                $YEAR = $year_key;
+                last;
+            }
+        }
+        $tried_all = 1 unless defined $idx;
+    }
+    if ($tried_all) {
+        confess "\nERROR: Can't anonymize person number $pnum\n";
+    }
+    return $YEAR, $idx;
 }
 
 

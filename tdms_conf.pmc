@@ -5,6 +5,15 @@ use vars qw(@ISA @EXPORT_OK);
 our @ISA=qw(Exporter);
 our @EXPORT_OK = ();
 
+# The number of records to fetch from the entry tables
+our $init_size = 10;
+push @EXPORT_OK, qw($init_size);
+
+# The entry tables and their key column
+our @company_entry = qw(acib_acitftg ftg_org_num);
+our @person_entry = qw(acpr_prtpr pnr);
+push @EXPORT_OK, qw(@company_entry @person_entry);
+
 # Postgresql connection settings
 # For local DB
 our $local_db = "DB2REP";
@@ -32,15 +41,6 @@ push @EXPORT_OK, qw($mainframe_ip $mainframe_uid $mainframe_pwd);
 # Directory where exported files are written
 our $export_dir = "ftp";
 push @EXPORT_OK, qw($export_dir);
-
-# The number of records to fetch from the entry tables
-our $init_size = 10;
-push @EXPORT_OK, qw($init_size);
-
-# The entry tables and their key column
-our @company_entry = qw(acib_acitftg ftg_org_num);
-our @person_entry = qw(acpr_prtpr pnr);
-push @EXPORT_OK, qw(@company_entry @person_entry);
 
 # Test object indicators
 our @company_testobject_indicator = qw(acib_acitftg ftg_istatus_kod);
