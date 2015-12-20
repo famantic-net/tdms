@@ -25,6 +25,7 @@ use List::Util qw(shuffle);
 
 use anon::AnonymizedFields;
 use anon::LegalEntity;
+use anon::PersonNum;
 use anon::data::Discarded_bnums;
 
 our @ISA = qw(LegalEntity);
@@ -69,6 +70,11 @@ sub anonymizeOrgNumber { # orgnum, anonparams
         my $row = $result_set[0];
         ($JFR) = ${$row}[&{$field_num}("ftg_iklass_kod")] =~ m/(\d\d)$/;
     }
+    if ($JFR == 10) { # Business number for Enskild Firma must be fetched from Skatteverket's list
+        my $pnum = new PersonNum;
+        return $pnum->anonymizePersonNumber($orgnum);
+    }
+    
     $JFR = "JFR_$JFR";
     my $lead_dig;
     if (length($orgnum) == 12) {
@@ -83,11 +89,13 @@ sub anonymizeOrgNumber { # orgnum, anonparams
                 $idx = int(rand($#bnums));
             }
             else {
-                $idx = _get_random_number($orgnum, $JFR);
+                ($JFR, $idx) = _get_random_number($orgnum, $JFR);
+                @bnums = @{$bnum_store->$JFR};
             }
         }
         else {
-            $idx = _get_random_number($orgnum, $JFR);
+            ($JFR, $idx) = _get_random_number($orgnum, $JFR);
+            @bnums = @{$bnum_store->$JFR};
         }
         $orgnum = $lead_dig . $orgnum if defined $lead_dig;
         $anonymized{$orgnum} = $lead_dig ? $lead_dig . $bnums[$idx] : $bnums[$idx];
@@ -100,7 +108,7 @@ sub _get_random_number {
     my $orgnum = shift;
     my $JFR = shift if @_;
     my $idx;
-    print "\nWARNING: NO AVAILABLE DISCARDED BUSINESS NUMBER FOR $orgnum in $JFR!\n";
+    print "WARNING: NO AVAILABLE DISCARDED BUSINESS NUMBER FOR $orgnum in $JFR!\n";
     unless ($tried_all) {
         # Assign a business number from any of the other available
         my @JFRs = @{$bnum_store->JFRall};
@@ -117,7 +125,7 @@ sub _get_random_number {
     else {
         confess "\nERROR: Can't anonymize business number $orgnum\n";
     }
-    return $idx;
+    return $JFR, $idx;
 }
 
 
