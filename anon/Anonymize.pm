@@ -5,12 +5,13 @@ use feature 'unicode_strings';
 use Time::HiRes qw(time);
 
 use anon::BusinessNum;
-use anon::BusinessName;
+use anon::ArbNum;
+use anon::DunsNum;
 use anon::PersonNum;
+use anon::BusinessName;
 use anon::PersonName;
 use anon::BusinessAddress;
 use anon::PrivateAddress;
-use anon::ArbNum;
 
 our $dbh_rdb;
 
@@ -48,6 +49,7 @@ sub enact { #
                 ${$row}[&{$field_num}($field)] = $orgnum->anonymizeOrgNumber(${$row}[&{$field_num}($field)], $anonparams);
             }
         }
+
         my $arbnum = new ArbNum;
         if (grep /$table/, $arbnum->list_attr) {
             for my $field (@{$arbnum->fields($table)}) {
@@ -55,6 +57,14 @@ sub enact { #
                 ${$row}[&{$field_num}($field)] = $arbnum->anonymizeWorkplaceNumber(${$row}[&{$field_num}($field)]);
             }
         }
+
+        my $dunsnum = new DunsNum;
+        if (grep /$table/, $dunsnum->list_attr) {
+            for my $field (@{$dunsnum->fields($table)}) {
+                ${$row}[&{$field_num}($field)] = $dunsnum->anonymizeDunsNumber(${$row}[&{$field_num}($field)]);
+            }
+        }
+
         my $orgname = new BusinessName($dbh_rdb, $id);
         if (grep /$table/, $orgname->list_attr("full")) {
             for my $field (@{$orgname->fields('full', $table)}) {

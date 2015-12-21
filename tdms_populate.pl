@@ -113,21 +113,6 @@ sub trace_print {
     }
 }
 
-#$dbh_local = DBI->connect('dbi:Pg:dbname=DB2REP;
-#                        host=127.0.0.1;
-#                        port=5432',
-#                        'db2moto',
-#                        '',
-#                        {AutoCommit=>1,RaiseError=>1,PrintError=>0}
-#                    );
-#
-#$dbh_rdb = DBI->connect('dbi:Pg:dbname=DB2REP;
-#                        host=10.46.117.29;
-#                        port=5432',
-#                        'nenant',
-#                        'nenant',
-#                        {AutoCommit=>1,RaiseError=>1,PrintError=>0}
-#                    );
 
 use tdms_conf qw($local_db $local_host $local_dbport $local_dbuid $local_dbpwd);
 use tdms_conf qw($remote_db $remote_host $remote_dbport $remote_dbuid $remote_dbpwd);
@@ -172,6 +157,9 @@ our (@tob_tuple, %business_contacts, @business_contacts, %business_type);
 # The different type of entities to handle
 populate "organizations";
 populate "people";
+
+
+### --------------------------
 
 sub populate {
     my $target = shift;

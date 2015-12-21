@@ -19,7 +19,7 @@ our %AnonymizedFields = (
         acba_scoring2 => [ qw(orgnr) ],
         acdt_dttph => [ qw(org_num dobnr_num) ],
         acdt_dttpv => [ qw(org_num dobnr_num) ],
-        acgd_empfun01 => [ qw(dunsnr orgnr firstname lastname) ],
+        acgd_empfun01 => [ qw(dunsnr cfarnr orgnr firstname lastname) ],
         acgd_organi01 => [ qw(dunsnr cfarnr orgnr) ],
         acib_acitaga => [ qw(aga_org_num) ],
         acib_acitarn => [ qw(arn_arbnr_num arn_dunsnr_num arn_org_num arn_badr arn_bpost_num arn_bport arn_padr arn_ppost_num arn_pport) ],
@@ -93,6 +93,7 @@ our %AnonymizedFields = (
         nyckeltal => [ qw(org_num) ],
     },
     arbnum => {
+        acgd_empfun01 => [ qw(cfarnr) ],
         acgd_organi01 => [ qw(cfarnr) ],
         acib_acitarn => [ qw(arn_arbnr_num) ],
         acib_acitnoe => [ qw(noe_enhnr_num) ],
