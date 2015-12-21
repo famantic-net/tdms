@@ -70,19 +70,24 @@ sub anonymizeOrgNumber { # orgnum, anonparams
         my $row = $result_set[0];
         ($JFR) = ${$row}[&{$field_num}("ftg_iklass_kod")] =~ m/(\d\d)$/;
     }
-    if ($JFR == 10) { # Business number for Enskild Firma must be fetched from Skatteverket's list
-        my $pnum = new PersonNum;
-        return $pnum->anonymizePersonNumber($orgnum);
-    }
-    
-    $JFR = "JFR_$JFR";
     my $lead_dig;
-    if (length($orgnum) == 12) {
-        ($lead_dig) = $orgnum =~ m/^(\d\d)/;
-        $orgnum =~ s/^(\d\d)//;
-    }
     unless ($anonymized{$orgnum}) {
+        if ($JFR == 10) { # Business number for Enskild Firma must be fetched from Skatteverket's list
+            my $pnum = new PersonNum;
+            $anonymized{$orgnum} = $pnum->anonymizePersonNumber($orgnum);
+        }
+        if (length($orgnum) == 12) {
+            ($lead_dig) = $orgnum =~ m/^(\d\d)/;
+            $orgnum =~ s/^(\d\d)//;
+            if ($anonymized{$orgnum}) { # Normal length already done
+                $anonymized{$lead_dig . $orgnum} = $lead_dig . $anonymized{$orgnum};
+                return $anonymized{$lead_dig . $orgnum};
+            }
+            
+        }
+        return $anonymized{$orgnum} if $anonymized{$orgnum};
         my (@bnums, $idx);
+        $JFR = "JFR_$JFR";
         if ($bnum_store->can($JFR)) {
             @bnums = @{$bnum_store->$JFR};
             unless ($#bnums < 0) { # No more numbers in that JFR category
@@ -97,8 +102,11 @@ sub anonymizeOrgNumber { # orgnum, anonparams
             ($JFR, $idx) = _get_random_number($orgnum, $JFR);
             @bnums = @{$bnum_store->$JFR};
         }
-        $orgnum = $lead_dig . $orgnum if defined $lead_dig;
-        $anonymized{$orgnum} = $lead_dig ? $lead_dig . $bnums[$idx] : $bnums[$idx];
+        $anonymized{$orgnum} = $bnums[$idx];
+        if ($lead_dig) {
+            $anonymized{$lead_dig . $orgnum} = $lead_dig . $bnums[$idx];
+            $orgnum = $lead_dig . $orgnum;
+        }
         $bnum_store->discard_number($JFR, $idx);
     }
     return $anonymized{$orgnum};
@@ -106,7 +114,7 @@ sub anonymizeOrgNumber { # orgnum, anonparams
 
 sub _get_random_number {
     my $orgnum = shift;
-    my $JFR = shift if @_;
+    my $JFR = shift;
     my $idx;
     print "WARNING: NO AVAILABLE DISCARDED BUSINESS NUMBER FOR $orgnum in $JFR!\n";
     unless ($tried_all) {
