@@ -9,12 +9,13 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIB.ACITAGA";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acib_acitaga = (
-    aga_org_num     => [ 11, 1 ],
-    aga_arman       => [ 6 , 1 ],
-    aga_ref_num     => [ 9 , 1 ],
-    aga_belopp      => [ 13, 1 ],
-    aga_trans_dat   => [ 26, 0 ],
+    aga_org_num     => [ 11, 1, 0 ],
+    aga_arman       => [ 6 , 1, 1 ],
+    aga_ref_num     => [ 9 , 1, 2 ],
+    aga_belopp      => [ 13, 1, 3 ],
+    aga_trans_dat   => [ 26, 0, 4 ],
 );
 
 sub new() {

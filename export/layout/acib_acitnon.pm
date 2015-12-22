@@ -9,16 +9,17 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIB.ACITNON";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acib_acitnon = (
-    non_org_num     => [ 11, 1 ],
-    non_sni_kod     => [ 7 , 0 ],
-    non_huvsni_mrk  => [ 1 , 0 ],
-    non_upd_kod     => [ 3 , 0 ],
-    non_upd_dat     => [ 8 , 1 ],
-    non_dat         => [ 8 , 1 ],
-    non_tid         => [ 6 , 1 ],
-    non_ny_sig      => [ 4 , 0 ],
-    non_up_sig      => [ 4 , 0 ],
+    non_org_num     => [ 11, 1, 0 ],
+    non_sni_kod     => [ 7 , 0, 1 ],
+    non_huvsni_mrk  => [ 1 , 0, 2 ],
+    non_upd_kod     => [ 3 , 0, 3 ],
+    non_upd_dat     => [ 8 , 1, 4 ],
+    non_dat         => [ 8 , 1, 5 ],
+    non_tid         => [ 6 , 1, 6 ],
+    non_ny_sig      => [ 4 , 0, 7 ],
+    non_up_sig      => [ 4 , 0, 8 ],
 );
 
 

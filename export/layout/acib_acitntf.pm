@@ -9,14 +9,15 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIB.ACITNTF";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acib_acitntf = (
-    ntf_org_num             => [ 11, 1 ],
-    ntf_foretr_ant          => [ 5 , 1 ],
-    ntf_betanm_ant          => [ 5 , 1 ],
-    ntf_betanm_snitt        => [ 7 , 1 ],
-    ntf_kkengagemang_ant    => [ 5 , 1 ],
-    ntf_kkengagemang_snitt  => [ 7 , 1 ],
-    ntf_upd_dat             => [ 26, 0 ],
+    ntf_org_num             => [ 11, 1, 0 ],
+    ntf_foretr_ant          => [ 5 , 1, 1 ],
+    ntf_betanm_ant          => [ 5 , 1, 2 ],
+    ntf_betanm_snitt        => [ 7 , 1, 3 ],
+    ntf_kkengagemang_ant    => [ 5 , 1, 4 ],
+    ntf_kkengagemang_snitt  => [ 7 , 1, 5 ],
+    ntf_upd_dat             => [ 26, 0, 6 ],
 );
 
 

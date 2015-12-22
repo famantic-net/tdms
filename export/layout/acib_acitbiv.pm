@@ -9,15 +9,16 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIB.ACITBIV";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acib_acitbiv = (
-    biv_org_num     => [ 11, 1 ],
-    biv_lop_num     => [ 5 , 1 ],
-    biv_biflop_num  => [ 5 , 1 ],
-    biv_rad_num     => [ 5 , 1 ],
-    biv_verks       => [ 70, 0 ],
-    biv_upd_kod     => [ 3 , 0 ],
-    biv_upd_dat     => [ 8 , 1 ],
-    biv_trans_dat   => [ 26, 0 ],
+    biv_org_num     => [ 11, 1, 0 ],
+    biv_lop_num     => [ 5 , 1, 1 ],
+    biv_biflop_num  => [ 5 , 1, 2 ],
+    biv_rad_num     => [ 5 , 1, 3 ],
+    biv_verks       => [ 70, 0, 4 ],
+    biv_upd_kod     => [ 3 , 0, 5 ],
+    biv_upd_dat     => [ 8 , 1, 6 ],
+    biv_trans_dat   => [ 26, 0, 7 ],
 );
 
 sub new() {

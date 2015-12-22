@@ -9,16 +9,17 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIB.ACITNOE";
 
 # Indicates field length and if sign should be applied
-    our %acib_acitnoe = (
-    noe_enhnr_num   => [ 8, 1 ],
-    noe_sni_kod     => [ 7, 0 ],
-    noe_huvsni_mrk  => [ 1, 0 ],
-    noe_upd_kod     => [ 3, 0 ],
-    noe_upd_dat     => [ 8, 1 ],
-    noe_dat         => [ 8, 1 ],
-    noe_tid         => [ 6, 1 ],
-    noe_ny_sig      => [ 4, 0 ],
-    noe_up_sig      => [ 4, 0 ],
+# Third element is for sorting
+our %acib_acitnoe = (
+    noe_enhnr_num   => [ 8, 1, 0 ],
+    noe_sni_kod     => [ 7, 0, 1 ],
+    noe_huvsni_mrk  => [ 1, 0, 2 ],
+    noe_upd_kod     => [ 3, 0, 3 ],
+    noe_upd_dat     => [ 8, 1, 4 ],
+    noe_dat         => [ 8, 1, 5 ],
+    noe_tid         => [ 6, 1, 6 ],
+    noe_ny_sig      => [ 4, 0, 7 ],
+    noe_up_sig      => [ 4, 0, 8 ],
 );
 
 

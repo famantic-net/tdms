@@ -9,14 +9,15 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIB.ACITVER";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acib_acitver = (
-    ver_org_num       => [ 11, 1 ],
-    ver_lop_num       => [ 5 , 1 ],
-    ver_rad_num       => [ 5 , 1 ],
-    ver_verks         => [ 70, 0 ],
-    ver_upd_kod       => [ 3 , 0 ],
-    ver_upd_dat       => [ 8 , 1 ],
-    ver_trans_dat     => [ 26, 0 ],
+    ver_org_num       => [ 11, 1, 0 ],
+    ver_lop_num       => [ 5 , 1, 1 ],
+    ver_rad_num       => [ 5 , 1, 2 ],
+    ver_verks         => [ 70, 0, 3 ],
+    ver_upd_kod       => [ 3 , 0, 4 ],
+    ver_upd_dat       => [ 8 , 1, 5 ],
+    ver_trans_dat     => [ 26, 0, 6 ],
 );
 
 

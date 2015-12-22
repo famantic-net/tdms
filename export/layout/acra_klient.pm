@@ -9,12 +9,13 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACRA.KLIENT";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acra_klient = (
-    orgnr       => [ 11, 1 ],
-    rappdat     => [ 26, 0 ],
-    prioklass   => [ 2 , 0 ],
-    priolnr     => [ 5 , 1 ],
-    klient      => [ 36, 0 ],
+    orgnr       => [ 11, 1, 0 ],
+    rappdat     => [ 26, 0, 1 ],
+    prioklass   => [ 2 , 0, 2 ],
+    priolnr     => [ 5 , 1, 3 ],
+    klient      => [ 36, 0, 4 ],
 );
 
 sub new() {

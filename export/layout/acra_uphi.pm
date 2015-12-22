@@ -9,27 +9,28 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACRA.UPHI";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acra_uphi = (
-    orgnr       => [ 11, 1 ],
-    prioklass   => [ 2 , 0 ],
-    priolnr     => [ 5 , 1 ],
-    status      => [ 1 , 0 ],
-    kundkod     => [ 8 , 0 ],
-    rappdat     => [ 26, 0 ],
-    produkt     => [ 8 , 0 ],
-    belopp      => [ 11, 1 ],
-    omdkod      => [ 1 , 0 ],
-    handl       => [ 8 , 0 ],
-    termid      => [ 4 , 0 ],
-    trdat       => [ 26, 0 ],
-    orgnr2      => [ 11, 1 ],
-    katkod      => [ 3 , 1 ],
-    fragetyp    => [ 2 , 1 ],
-    klient      => [ 1 , 0 ],
-    termtyp     => [ 1 , 0 ],
-    userid      => [ 8 , 0 ],
-    aterfors    => [ 6 , 0 ],
-    mallkod     => [ 4 , 0 ],
+    orgnr       => [ 11, 1,  0 ],
+    prioklass   => [ 2 , 0,  1 ],
+    priolnr     => [ 5 , 1,  2 ],
+    status      => [ 1 , 0,  3 ],
+    kundkod     => [ 8 , 0,  4 ],
+    rappdat     => [ 26, 0,  5 ],
+    produkt     => [ 8 , 0,  6 ],
+    belopp      => [ 11, 1,  7 ],
+    omdkod      => [ 1 , 0,  8 ],
+    handl       => [ 8 , 0,  9 ],
+    termid      => [ 4 , 0, 10 ],
+    trdat       => [ 26, 0, 11 ],
+    orgnr2      => [ 11, 1, 12 ],
+    katkod      => [ 3 , 1, 13 ],
+    fragetyp    => [ 2 , 1, 14 ],
+    klient      => [ 1 , 0, 15 ],
+    termtyp     => [ 1 , 0, 16 ],
+    userid      => [ 8 , 0, 17 ],
+    aterfors    => [ 6 , 0, 18 ],
+    mallkod     => [ 4 , 0, 19 ],
 );
 
 sub new() {

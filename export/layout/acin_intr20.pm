@@ -9,26 +9,27 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIN.INTR20";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acin_intr20 = (
-    priokod         => [ 2 , 0 ],
-    pnr             => [ 11, 1 ],
-    plnr            => [ 3 , 1 ],
-    orgnr           => [ 11, 1 ],
-    status          => [ 1 , 0 ],
-    trdat           => [ 26, 0 ],
-    namn            => [ 36, 0 ],
-    kod             => [ 1 , 0 ],
-    koddat          => [ 10, 0 ],
-    handl           => [ 8 , 0 ],
-    ant_styr_and    => [ 3 , 1 ],
-    idatkod         => [ 1 , 0 ],
-    offdatm         => [ 10, 0 ],
-    jurdatm         => [ 10, 0 ],
-    uppldat         => [ 26, 0 ],
-    ftgtyp          => [ 2 , 0 ],
-    ityp            => [ 2 , 0 ],
-    ratsw           => [ 1 , 0 ],
-    istatus         => [ 1 , 0 ],
+    priokod         => [ 2 , 0,  0 ],
+    pnr             => [ 11, 1,  1 ],
+    plnr            => [ 3 , 1,  2 ],
+    orgnr           => [ 11, 1,  3 ],
+    status          => [ 1 , 0,  4 ],
+    trdat           => [ 26, 0,  5 ],
+    namn            => [ 36, 0,  6 ],
+    kod             => [ 1 , 0,  7 ],
+    koddat          => [ 10, 0,  8 ],
+    handl           => [ 8 , 0,  9 ],
+    ant_styr_and    => [ 3 , 1, 10 ],
+    idatkod         => [ 1 , 0, 11 ],
+    offdatm         => [ 10, 0, 12 ],
+    jurdatm         => [ 10, 0, 13 ],
+    uppldat         => [ 26, 0, 14 ],
+    ftgtyp          => [ 2 , 0, 15 ],
+    ityp            => [ 2 , 0, 16 ],
+    ratsw           => [ 1 , 0, 17 ],
+    istatus         => [ 1 , 0, 18 ],
 );
 
 sub new() {

@@ -9,13 +9,14 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIB.ACITOMS";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acib_acitoms = (
-    oms_org_num         => [ 11, 1 ],
-    oms_artal           => [ 4 , 1 ],
-    oms_int_kod         => [ 2 , 0 ],
-    oms_org12_num       => [ 12, 1 ],
-    oms_upd_dat         => [ 26, 0 ],
-    oms_create_dat      => [ 26, 0 ],
+    oms_org_num         => [ 11, 1, 0 ],
+    oms_artal           => [ 4 , 1, 1 ],
+    oms_int_kod         => [ 2 , 0, 2 ],
+    oms_org12_num       => [ 12, 1, 3 ],
+    oms_upd_dat         => [ 26, 0, 4 ],
+    oms_create_dat      => [ 26, 0, 5 ],
 );
 
 sub new() {

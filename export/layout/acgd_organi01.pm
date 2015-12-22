@@ -9,18 +9,19 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACGD.ORGANI01";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acgd_organi01 = (
-    dunsnr             => [ 11, 1 ],
-    cfarnr             => [ 8 , 1 ],
-    orgnr              => [ 11, 1 ],
-    import_indicator   => [ 1 , 0 ],
-    export_indicator   => [ 1 , 0 ],
-    web_address        => [ 50, 0 ],
-    company_e_mail     => [ 80, 0 ],
-    company_size       => [ 4 , 0 ],
-    company_telenr     => [ 16, 0 ],
-    update_timest      => [ 26, 0 ],
-    insert_timest      => [ 26, 0 ],
+    dunsnr             => [ 11, 1,  0 ],
+    cfarnr             => [ 8 , 1,  1 ],
+    orgnr              => [ 11, 1,  2 ],
+    import_indicator   => [ 1 , 0,  3 ],
+    export_indicator   => [ 1 , 0,  4 ],
+    web_address        => [ 50, 0,  5 ],
+    company_e_mail     => [ 80, 0,  6 ],
+    company_size       => [ 4 , 0,  7 ],
+    company_telenr     => [ 16, 0,  8 ],
+    update_timest      => [ 26, 0,  9 ],
+    insert_timest      => [ 26, 0, 10 ],
 );
 
 sub new() {

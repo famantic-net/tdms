@@ -9,13 +9,14 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACIN.INTR30";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acin_intr30 = (
-    orgnr   => [ 11, 1 ],
-    lnr     => [ 3 , 1 ],
-    status  => [ 1 , 0 ],
-    trdat   => [ 26, 0 ],
-    text    => [ 70, 0 ],
-    handl   => [ 8 , 0 ],
+    orgnr   => [ 11, 1, 0 ],
+    lnr     => [ 3 , 1, 1 ],
+    status  => [ 1 , 0, 2 ],
+    trdat   => [ 26, 0, 3 ],
+    text    => [ 70, 0, 4 ],
+    handl   => [ 8 , 0, 5 ],
 );
 
 sub new() {

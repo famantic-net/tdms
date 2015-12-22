@@ -9,21 +9,22 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACGD.EMPFUN01";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acgd_empfun01 = (
-    dunsnr          => [ 11, 1 ],
-    cfarnr          => [ 8 , 1 ],
-    orgnr           => [ 11, 1 ],
-    function_code   => [ 4 , 0 ],
-    employee_id     => [ 10, 0 ],
-    b_title         => [ 25, 0 ],
-    firstname       => [ 40, 0 ],
-    lastname        => [ 40, 0 ],
-    gender          => [ 1 , 0 ],
-    company_size    => [ 4 , 0 ],
-    cs_unique_id    => [ 12, 0 ],
-    delete_ind      => [ 1 , 0 ],
-    update_timest   => [ 26, 0 ],
-    insert_timest   => [ 26, 0 ],
+    dunsnr          => [ 11, 1,  0 ],
+    cfarnr          => [ 8 , 1,  1 ],
+    orgnr           => [ 11, 1,  2 ],
+    function_code   => [ 4 , 0,  3 ],
+    employee_id     => [ 10, 0,  4 ],
+    b_title         => [ 25, 0,  5 ],
+    firstname       => [ 40, 0,  6 ],
+    lastname        => [ 40, 0,  7 ],
+    gender          => [ 1 , 0,  8 ],
+    company_size    => [ 4 , 0,  9 ],
+    cs_unique_id    => [ 12, 0, 10 ],
+    delete_ind      => [ 1 , 0, 11 ],
+    update_timest   => [ 26, 0, 12 ],
+    insert_timest   => [ 26, 0, 13 ],
 );
 
 

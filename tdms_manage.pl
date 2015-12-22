@@ -444,6 +444,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                     mkdir $export_dir
                 }
                 my $exporter = new TextExporter($name);
+                last SWITCH unless $exporter;
                 my $filename = $exporter->filename;
                 if (open my $fh, ">", "$export_dir/$filename") {
                     trace_print "Writing $filename\n";

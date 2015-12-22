@@ -9,18 +9,19 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACDT.DTTPV";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acdt_dttpv = (
-    org_num         => [ 11, 1 ],
-    dobnr_num       => [ 11, 1 ],
-    arvecka         => [ 6 , 1 ],
-    paydex          => [ 4 , 1 ],
-    pdxall          => [ 4 , 1 ],
-    pdxline         => [ 4 , 1 ],
-    nrsupp          => [ 6 , 1 ],
-    nrinv           => [ 6 , 1 ],
-    total           => [ 12, 1 ],
-    date_berakning  => [ 10, 0 ],
-    delay           => [ 4 , 1 ],
+    org_num         => [ 11, 1,  0 ],
+    dobnr_num       => [ 11, 1,  1 ],
+    arvecka         => [ 6 , 1,  2 ],
+    paydex          => [ 4 , 1,  3 ],
+    pdxall          => [ 4 , 1,  4 ],
+    pdxline         => [ 4 , 1,  5 ],
+    nrsupp          => [ 6 , 1,  6 ],
+    nrinv           => [ 6 , 1,  7 ],
+    total           => [ 12, 1,  8 ],
+    date_berakning  => [ 10, 0,  9 ],
+    delay           => [ 4 , 1, 10 ],
 );
 
 

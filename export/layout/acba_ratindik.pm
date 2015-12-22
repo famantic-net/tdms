@@ -9,11 +9,12 @@ our @ISA = qw(Testdata);
 our $filename = "E719.TESTDATA.ACBA.RATINDIK";
 
 # Indicates field length and if sign should be applied
+# Third element is for sorting
 our %acba_ratindik = (
-    orgnr	  => [ 11, 1 ],
-    pd	          => [ 7,  1 ],
-    riskindikator => [ 1,  0 ],
-    berakn_dat	  => [ 26, 0 ],
+    orgnr         => [ 11, 1, 0 ],
+    pd            => [ 7,  1, 1 ],
+    riskindikator => [ 1,  0, 2 ],
+    berakn_dat    => [ 26, 0, 3 ],
 );
 
 sub new() {
