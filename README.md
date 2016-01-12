@@ -2,7 +2,7 @@
 # **Test data management system**
 ---
 
-https://devtools.bisnode.com/confluence/display/~davtor/Test+data+management+system
+https://devtools.bisnode.com/confluence/display/TST/Test+data+management+system+-+TDMS
 
 
 ## Goals
@@ -39,12 +39,12 @@ to test or provide test data to testers and customers.
        | |  Test DB  | |  Prod DB  |  |   .-         -.
        | `._  DB2  _.' `._  DB2  _.'  |   |-_       _-|
        |    "-----"       "-----"     |   |  ~-----~  |
-       |       ^             ^        |   test data DB|
-       |       |             |        |    postgresql '
-       |       |             |        |      "-----"   
-       '-------|-------------|--------'         |
-               |             |                  |
-               '-------------'-----------<------'
+       |       ^                      |   test data DB|
+       |       |                      |    postgresql '
+       |       |                      |      "-----"   
+       '-------|----------------------'         |
+               |                                |
+               '-------------------------<------'
 
 
 ## Tool
@@ -149,17 +149,44 @@ There are two main programs used, 'tdms_populate.pl' and 'tdms_manage.pl'.
            Classes used for creating anonymized fields.
 
             anon::Address.pm
+            anon::AnonParams.pm
             anon::AnonymizedFields.pm
             anon::Anonymize.pm
+            anon::ArbNum.pm
             anon::BusinessAddress.pm
             anon::BusinessName.pm
             anon::BusinessNum.pm
-            anon::GivenNames.pm
+            anon::DunsNum.pm
             anon::LegalEntity.pm
             anon::PersonName.pm
             anon::PersonNum.pm
             anon::PrivateAddress.pm
-            anon::SurNames.pm
+            anon::data::ARN_DUNS.pm
+            anon::data::Discarded_bnums.pm
+            anon::data::GivenNames.pm
+            anon::data::SurNames.pm
+            anon::data::TestPersonNums.pm
+       
+
+       Test object property handling
+       -----------------------------
+           Classes used for fetching test objects with certain properties.
+           
+            properties::Collector.pm
+            properties::DBargs.pm
+            properties::Idrotter.pm
+            properties::Property.pm
+            properties::handlers::AB.pm
+            properties::handlers::Anstallda.pm
+            properties::handlers::EF.pm
+            properties::handlers::Forening.pm
+            properties::handlers::HB.pm
+            properties::handlers::KB.pm
+            properties::handlers::Lagerbolag.pm
+            properties::handlers::Rating.pm
+            properties::handlers::Stat.pm
+            properties::handlers::Stiftelse.pm
+
 
        Mainframe export
        ----------------
