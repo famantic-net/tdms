@@ -237,6 +237,14 @@ There are two main programs used, 'tdms_populate.pl' and 'tdms_manage.pl'.
 
 
 
+## Docker container
+
+There is a Dockerfile that specifies building a Docker image with the TDMS
+application based off the official Perl image. Running a container from this
+image depends on a running container with the [TDMS DB]
+(https://buildtools.bisnode.com/stash/projects/PEN/repos/docker-rdb/browse?at=refs%2Fheads%2Ftdms)
+See the makefile for details.
+
 
 ## Attribute
 
