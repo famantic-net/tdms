@@ -317,6 +317,14 @@ else {
     $tabsth = $dbh_local->table_info();
 }
 
+if ($export) {
+    use tdms_conf qw($export_dir $export_prefix);
+    unless ( -e $export_dir ) {
+        mkdir $export_dir
+    }
+    unlink glob "'$export_prefix.*'";
+}
+
 ### Iterate through all the tables...
 while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
     
@@ -426,7 +434,7 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
             last SWITCH;
         };
         $export && do {
-            use tdms_conf qw($export_tables $export_dir);
+            use tdms_conf qw($export_tables);
             last SWITCH unless grep /$name$/, &{$export_tables} ;
             my $dbh = $localdb ? $dbh_local : $dbh_rdb;
             my $statement = "SELECT count(*) FROM $table";
@@ -440,9 +448,6 @@ while ( my ( $qual, $owner, $name, $type ) = $tabsth->fetchrow_array() ) {
                 $sth = $dbh->prepare( $statement );
                 $sth->execute();
                 $result_table_ref = $sth->fetchall_arrayref;
-                unless ( -e $export_dir ) {
-                    mkdir $export_dir
-                }
                 my $exporter = new TextExporter($name);
                 last SWITCH unless $exporter;
                 my $filename = $exporter->filename;

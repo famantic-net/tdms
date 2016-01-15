@@ -42,6 +42,10 @@ push @EXPORT_OK, qw($mainframe_ip $mainframe_uid $mainframe_pwd);
 our $export_dir = "ftp";
 push @EXPORT_OK, qw($export_dir);
 
+# Prefix for file names on mainframe
+our $export_prefix = "E719.TESTDATA";
+push @EXPORT_OK, qw($export_prefix);
+
 # Test object indicators
 our @company_testobject_indicator = qw(acib_acitftg ftg_istatus_kod);
 our @person_testobject_indicator = qw(acpr_prtpr status);

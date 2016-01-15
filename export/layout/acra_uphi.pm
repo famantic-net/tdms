@@ -3,10 +3,11 @@ package acra_uphi;
 use strict;
 use feature 'unicode_strings';
 use export::Testdata;
+use tdms_conf qw($export_prefix);
 
 our @ISA = qw(Testdata);
 
-our $filename = "E719.TESTDATA.ACRA.UPHI";
+our $filename = "$export_prefix.ACRA.UPHI";
 
 # Indicates field length and if sign should be applied
 # Third element is for sorting

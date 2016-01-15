@@ -3,10 +3,11 @@ package acgd_empfun01;
 use strict;
 use feature 'unicode_strings';
 use export::Testdata;
+use tdms_conf qw($export_prefix);
 
 our @ISA = qw(Testdata);
 
-our $filename = "E719.TESTDATA.ACGD.EMPFUN01";
+our $filename = "$export_prefix.ACGD.EMPFUN01";
 
 # Indicates field length and if sign should be applied
 # Third element is for sorting
