@@ -61,14 +61,14 @@ sub anonymizeZip {
 }
 
 
-sub anonymizeZipNew {
+sub anonymizeZipEval {
     my $self = shift;
     my $real_zip = shift;
     my $zip_field_len = length($real_zip);
     unless ($anonymized{$address_id}) {
         $anonymized{$address_id} = $self->__get_address;
     }
-    return sprintf "%- ${zip_field_len}s", $anonymized{$address2_id}[2];
+    return sprintf "%- ${municipality_field_len}s", $anonymized{$address2_id}[2];
 
 
 sub __get_address {
