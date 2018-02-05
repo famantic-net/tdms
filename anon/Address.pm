@@ -69,7 +69,7 @@ sub anonymizeZipEval {
         $anonymized{$address_id} = $self->__get_address;
     }
     if ($#address_rows < 0) {
-        my $statement = "SELECT * FROM $address_table order by random() limit $limit";
+        my $statement = "SELECT * FROM $name_table order by random() limit $limit";
         my $sth = $dbh->prepare( $statement );
         $sth->execute;
         @address_rows = @{$sth->fetchall_arrayref};
