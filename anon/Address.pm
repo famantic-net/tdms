@@ -61,6 +61,22 @@ sub anonymizeZip {
 }
 
 
+sub anonymizeZipEval {
+    my $self = shift;
+    my $real_zip = shift;
+    my $zip_field_len = length($real_zip);
+    unless ($anonymized{$address_id}) {
+        $anonymized{$address_id} = $self->__get_address;
+    }
+    if ($#address_rows < 0) {
+        my $statement = "SELECT * FROM $name_table order by random() limit $limit";
+        my $sth = $dbh->prepare( $statement );
+        $sth->execute;
+        @address_rows = @{$sth->fetchall_arrayref};
+    }
+    return sprintf "%- ${municipality_field_len}s", $anonymized{$address2_id}[2];
+
+
 sub __get_address {
     if ($#address_rows < 0) {
         my $statement = "SELECT * FROM $address_table order by random() limit $limit";
