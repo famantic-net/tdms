@@ -19,7 +19,7 @@ sub new() {
 }
 
 
-sub anonymizeBusinessAbbr {
+sub anonymizeBusinessAddress {
     my $self = shift;
     my $real_name = shift;
     #return $real_name if $real_name =~ m/^\s*$/; # If empty return what came in
