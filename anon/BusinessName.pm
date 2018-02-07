@@ -56,32 +56,6 @@ sub anonymizeBusinessName {
 }
 
 
-sub anonymizeBusinessAbbr {
-    my $self = shift;
-    my $real_name = shift;
-    #return $real_name if $real_name =~ m/^\s*$/; # If empty return what came in
-    #print "Name: $real_name\n";
-    my $name_field_len = length($real_name);
-    unless ($anonymized{$name_id}{full}) { # If there is no business name, create one
-        $anonymized{$name_id}{full} = $self->anonymizeBusinessName($real_name);
-    }
-    my $name = $anonymized{$name_id}{full};
-    $name =~ s/\s+//g; # Remove all spaces
-    $name = uc $name;
-    my @name = split '', $name;
-    #print ": @name\n";
-    my $pos = 6;
-    my $abbr = $name[$pos];
-    while ($pos < ($#name)) {
-        $pos += int(rand(3)+1);
-        $abbr .= $name[$pos];
-    }
-    #print "Abbr: $abbr\n";
-    $anonymized{$name_id}{abbr} = substr($abbr, 0, $name_field_len);
-    return sprintf("%- ${name_field_len}s", $anonymized{$name_id}{abbr});
-}
-
-
 sub __get_names {
         if ($#name_rows < 0) {
             my $statement = "SELECT $name_field FROM $name_table order by random() limit $limit";
