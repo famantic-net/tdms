@@ -5,15 +5,6 @@ use strict;
 
 our @ISA = qw(Property);
 
-our %AB = (
-        statement => q(
-            SELECT * FROM acib_acitftg
-                WHERE ftg_iklass_kod LIKE '%49' AND NOT ftg_lagbol_mrk='X'
-                AND ftg_iklass_kod LIKE '%64' AND NOT ftg_lagbol_mrk='X'
-                ORDER BY random()
-                LIMIT #size#
-        )
-);
 
 
 sub new() {
