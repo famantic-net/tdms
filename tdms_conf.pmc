@@ -52,45 +52,6 @@ our @person_testobject_indicator = qw(acpr_prtpr status);
 our $testobject_tag = "#TOBJ#";
 push @EXPORT_OK, qw(@company_testobject_indicator @person_testobject_indicator $testobject_tag);
 
-# Associated fields for organization numbers
-our %orgnum_name = (
-    acba_rathist => "orgnr",
-    acba_ratindik => "orgnr",
-    acba_rating => "orgnr",
-    acba_scoring2 => "orgnr",
-    acdt_dttph => "org_num",
-    acdt_dttpv => "org_num",
-    acib_acitaga => "aga_org_num",
-    acib_acitarn => "arn_org_num",
-    acib_acitbif => "bif_org_num",
-    acib_acitbiv => "biv_org_num",
-    acib_acitboa => "boa_org_num",
-    acib_acitefi => "efi_org_num",
-    acib_acitft2 => "ft2_org_num",
-    acib_acitft3 => "ft3_org_num",
-    acib_acitgaf => "gaf_org_num",
-    acib_acitkcn => "kcn_dottr_num",
-    acib_acitmin => "min_dottr_num",
-    acib_acitnon => "non_org_num",
-    acib_acitntf => "ntf_org_num",
-    acib_acitoms => "oms_org_num",
-    acib_acitver => "ver_org_num",
-    acin_intr10 => "orgnr",
-    acin_intr20 => "orgnr",
-    acin_intr30 => "orgnr",
-    acin_intr40 => "orgnr",
-    acgd_empfun01 => "orgnr",
-    acgd_organi01 => "orgnr",
-    acra_klient => "orgnr",
-    acra_rapp => "orgnr",
-    acra_ratssa => "orgnr",
-    acra_ratssah => "orgnr",
-    acra_uphi => "orgnr",
-    actx_ftax => "orgnr",
-    #nsdb_sync => "ftg_org_num",
-    nyckeltal => "org_num",
-);
-
 # Associated fields for person numbers
 our %pnr_name = (
     acin_intr20 => "pnr",
