@@ -75,6 +75,12 @@ sub anonymizePersonNumber { # pnum
             $anon_pnum =~ s/^\d\d//;
             $anonymized{$pnum} = $anon_pnum;  # Normal anoymized
         }
+        else {
+            $mod_pnum = "18" . $mod_pnum;
+            $anonymized{$mod_pnum} = $anon_pnum;  # Full anonymized
+            $anon_pnum =~ s/^\d\d{4}//;
+            $anonymized{$pnum} = $anon_pnum . $YEAR;  # Normal anoymized
+        }
         $pnum_store->discard_number($YEAR, $idx);
     }
     return $anonymized{$pnum};
