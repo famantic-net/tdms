@@ -2,7 +2,7 @@
 # **Test data management system**
 ---
 
-https://devtools.bisnode.com/confluence/display/TST/Test+data+management+system+-+TDMS
+https://confluence.bisnode.net/display/TST/Test+data+management+system+-+TDMS
 
 
 ## Goals
